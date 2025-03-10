@@ -1,0 +1,150 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-positive: #00FF66; /* Bright green */
+  --color-neutral: #8A8D91; /* Metallic grey */
+  --color-background: #222222; /* Dark charcoal */
+  --color-panel: rgba(34, 34, 34, 0.65); /* Semi-transparent panel */
+  --color-text: #FFFFFF;
+  --blur-amount: 10px;
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shine: rgba(255, 255, 255, 0.2);
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: 'Inter', 'Roboto', sans-serif;
+  background-image: 
+    radial-gradient(circle at 25% 15%, rgba(0, 255, 102, 0.1), transparent 25%),
+    radial-gradient(circle at 75% 85%, rgba(138, 141, 145, 0.1), transparent 25%);
+  min-height: 100vh;
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-opacity-65 backdrop-blur-md rounded-xl border shadow-lg;
+    border-color: var(--glass-border);
+    background-color: var(--color-panel);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .glass-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -50%;
+    width: 150%;
+    height: 100%;
+    background: linear-gradient(
+      to right,
+      transparent,
+      var(--glass-shine),
+      transparent
+    );
+    transform: rotate(30deg);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+  
+  .glass-panel:hover::before {
+    opacity: 1;
+    animation: glass-shine 2s infinite;
+  }
+  
+  .metal-edge {
+    @apply shadow-[0_0_15px_rgba(0,255,102,0.5)] border-2;
+    border-color: var(--color-positive);
+  }
+  
+  .metallic-bg {
+    background: linear-gradient(145deg, #8A8D91, #646669);
+  }
+  
+  .bright-green-text {
+    color: var(--color-positive);
+    text-shadow: 0 0 5px rgba(0, 255, 102, 0.5);
+  }
+  
+  .bright-green-bg {
+    background-color: var(--color-positive);
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(34, 34, 34, 0.3);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-neutral);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-positive);
+}
+
+/* Glassmorphic card components */
+.card-glass {
+  @apply glass-panel p-4 h-full transition-all duration-300 ease-in-out hover:shadow-[0_0_20px_rgba(0,255,102,0.3)];
+}
+
+/* Button styles */
+.btn-primary {
+  @apply rounded-md px-4 py-2 font-medium transition-all duration-200 text-black bg-gradient-to-r from-[#00FF66] to-[#00CC66] hover:shadow-[0_0_15px_rgba(0,255,102,0.7)];
+}
+
+.btn-secondary {
+  @apply rounded-md px-4 py-2 font-medium transition-all duration-200 text-white bg-gradient-to-r from-[#8A8D91] to-[#646669] hover:shadow-[0_0_15px_rgba(138,141,145,0.7)];
+}
+
+/* Trading chart grid */
+.trading-grid {
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  grid-template-rows: auto 1fr auto;
+  gap: 1rem;
+  height: calc(100vh - 4rem);
+}
+
+/* For AR mode */
+.ar-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 50;
+}
+
+/* Animations */
+@keyframes glowPulse {
+  0% { box-shadow: 0 0 5px rgba(0, 255, 102, 0.5); }
+  50% { box-shadow: 0 0 20px rgba(0, 255, 102, 0.8); }
+  100% { box-shadow: 0 0 5px rgba(0, 255, 102, 0.5); }
+}
+
+.glow-effect {
+  animation: glowPulse 2s infinite;
+}
+
+@keyframes glass-shine {
+  0% { transform: translateX(-100%) rotate(30deg); }
+  100% { transform: translateX(100%) rotate(30deg); }
+}
+
+/* Form input styles with glassmorphic effect */
+.input-glass {
+  @apply bg-opacity-20 rounded-md border border-gray-700 focus:border-[var(--color-positive)] focus:ring focus:ring-[var(--color-positive)] focus:ring-opacity-20 text-white px-4 py-2.5 transition-colors;
+  background-color: rgba(34, 34, 34, 0.5);
+  backdrop-filter: blur(5px);
+}

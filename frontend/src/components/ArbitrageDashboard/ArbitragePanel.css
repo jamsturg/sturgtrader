@@ -1,0 +1,66 @@
+
+.arbitrage-dashboard {
+  min-height: 90vh;
+}
+
+.glassmorphic-card {
+  background: rgba(18, 18, 18, 0.6) !important;
+  backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(81, 81, 81, 0.3) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37) !important;
+}
+
+.dashboard-title {
+  color: #00e676 !important;
+  font-weight: 600 !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stat-card {
+  padding: 16px;
+  height: 100%;
+  background: rgba(40, 40, 40, 0.6) !important;
+  border: 1px solid rgba(81, 81, 81, 0.3) !important;
+  border-radius: 8px !important;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 230, 118, 0.1);
+}
+
+.profit-text {
+  color: #00e676 !important;
+  font-weight: 600 !important;
+}
+
+.opportunities-table {
+  background: transparent !important;
+}
+
+.opportunity-row {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.opportunity-row:hover {
+  background-color: rgba(0, 230, 118, 0.05) !important;
+}
+
+.buy-exchange {
+  background-color: rgba(33, 150, 243, 0.2) !important;
+  border: 1px solid rgba(33, 150, 243, 0.5) !important;
+}
+
+.sell-exchange {
+  background-color: rgba(0, 230, 118, 0.2) !important;
+  border: 1px solid rgba(0, 230, 118, 0.5) !important;
+}
+
+.confidence-progress {
+  color: #00e676 !important;
+}
