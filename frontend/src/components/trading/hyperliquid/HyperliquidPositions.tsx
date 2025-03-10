@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { hyperliquidService, Position } from '../../../services/hyperliquidService';
+import { Position } from '../../../services/hyperliquidService';
+import { enhancedHyperliquidService } from '../../../services/enhancedHyperliquidService';
 
 interface HyperliquidPositionsProps {
   refreshInterval?: number;
@@ -18,7 +19,7 @@ const HyperliquidPositions: React.FC<HyperliquidPositionsProps> = ({
     try {
       setLoading(true);
       setError(null);
-      const data = await hyperliquidService.getPositions();
+      const data = await enhancedHyperliquidService.getPositions();
       setPositions(data);
     } catch (err: any) {
       setError(err.message || 'Failed to fetch positions');

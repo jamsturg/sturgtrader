@@ -24,6 +24,10 @@ class SecureApiClient {
     }
   }
 
+  getToken(): string | null {
+    return this.token;
+  }
+
   private getHeaders(): Record<string, string> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',

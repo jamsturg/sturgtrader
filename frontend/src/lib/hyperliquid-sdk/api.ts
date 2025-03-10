@@ -12,6 +12,7 @@ import {
   Universe,
   UserState,
   VaultDetails,
+  WsMsg,
 } from './types';
 import { WebsocketManager } from './websocketmanager';
 
@@ -23,22 +24,95 @@ export class API {
     this.httpsAgent = new https.Agent({ keepAlive: true });
   }
 
-  public async post<T>(urlPath: string, payload = {}): Promise<T> {
-    try {
-      const response = await axios.post(this.baseUrl + urlPath, payload, {
-        httpAgent: this.httpAgent,
-        httpsAgent: this.httpsAgent,
-      });
-      return <T>response.data;
-    } catch (error) {
-      console.log(error);
-      throw error;
+  // Retry delay queue to implement rate limiting
+  private retryDelay = 0;
+  private lastRequestTime = 0;
+  private requestQueue: Array<() => Promise<any>> = [];
+  private isProcessingQueue = false;
+  private readonly minRequestInterval = 500; // Minimum 500ms between requests to avoid rate limiting
+
+  private async processQueue() {
+    if (this.isProcessingQueue || this.requestQueue.length === 0) return;
+    
+    this.isProcessingQueue = true;
+    
+    while (this.requestQueue.length > 0) {
+      const now = Date.now();
+      const timeSinceLastRequest = now - this.lastRequestTime;
+      
+      if (timeSinceLastRequest < this.minRequestInterval) {
+        // Wait until we can make the next request
+        await new Promise(resolve => setTimeout(resolve, this.minRequestInterval - timeSinceLastRequest));
+      }
+      
+      // Execute the next request in the queue
+      const request = this.requestQueue.shift();
+      if (request) {
+        try {
+          this.lastRequestTime = Date.now();
+          await request();
+        } catch (error) {
+          console.error("Error processing queued request:", error);
+        }
+      }
     }
+    
+    this.isProcessingQueue = false;
+  }
+
+  private enqueueRequest<T>(requestFn: () => Promise<T>): Promise<T> {
+    return new Promise((resolve, reject) => {
+      this.requestQueue.push(async () => {
+        try {
+          const result = await requestFn();
+          resolve(result);
+        } catch (error) {
+          reject(error);
+        }
+      });
+      
+      // Start processing the queue if it's not already in progress
+      if (!this.isProcessingQueue) {
+        this.processQueue();
+      }
+    });
+  }
+
+  public async post<T>(urlPath: string, payload = {}, retries = 3): Promise<T> {
+    const executeRequest = async (): Promise<T> => {
+      try {
+        const response = await axios.post(this.baseUrl + urlPath, payload, {
+          httpAgent: this.httpAgent,
+          httpsAgent: this.httpsAgent,
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+        this.retryDelay = 0; // Reset retry delay on success
+        return response.data;
+      } catch (error: any) {
+        // Rate limiting (429) or network errors should be retried
+        if (retries > 0 && (error.response?.status === 429 || !error.response)) {
+          const delay = this.retryDelay || 1000;
+          this.retryDelay = Math.min(delay * 2, 10000); // Exponential backoff, max 10 seconds
+          
+          console.warn(`Request failed, retrying in ${delay}ms... (${retries} retries left)`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          
+          return this.post<T>(urlPath, payload, retries - 1);
+        }
+        
+        throw error;
+      }
+    };
+    
+    // Enqueue the request to implement rate limiting
+    return this.enqueueRequest<T>(executeRequest);
   }
 }
 
 export class Info extends API {
-  wsManager: WebsocketManager;
+  wsManager!: WebsocketManager;
 
   constructor(baseUrl: string, skipWs = false) {
     super(baseUrl);
@@ -123,8 +197,8 @@ export class Info extends API {
     });
   }
 
-  public subscribe(subscription: Subscription, callback: (e) => void): void {
-    this.wsManager.subscribe(subscription, callback);
+  public subscribe<T>(request: Subscription, callback: (data: T) => void): void {
+    this.wsManager.subscribe(request, callback as (wsMsg: WsMsg) => void);
   }
 
   public unsubscribe(

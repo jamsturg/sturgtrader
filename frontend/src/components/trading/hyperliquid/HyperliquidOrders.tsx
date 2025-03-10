@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { hyperliquidService, Order } from '../../../services/hyperliquidService';
+import { Order } from '../../../services/hyperliquidService';
+import { enhancedHyperliquidService } from '../../../services/enhancedHyperliquidService';
 
 interface HyperliquidOrdersProps {
   refreshInterval?: number;
@@ -19,7 +20,7 @@ const HyperliquidOrders: React.FC<HyperliquidOrdersProps> = ({
     try {
       setLoading(true);
       setError(null);
-      const data = await hyperliquidService.getOpenOrders();
+      const data = await enhancedHyperliquidService.getOpenOrders();
       setOrders(data);
     } catch (err: any) {
       setError(err.message || 'Failed to fetch orders');
@@ -42,7 +43,7 @@ const HyperliquidOrders: React.FC<HyperliquidOrdersProps> = ({
   const handleCancelOrder = async (symbol: string, orderId: string) => {
     try {
       setCancellingOrders(prev => new Set(prev).add(orderId));
-      const result = await hyperliquidService.cancelOrder(symbol, orderId);
+      const result = await enhancedHyperliquidService.cancelOrder(symbol, orderId);
       
       if (result.success) {
         // Remove the cancelled order from the list

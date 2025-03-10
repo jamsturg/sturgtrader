@@ -193,15 +193,21 @@ export interface TriggerOrderTypeWire {
   tpsl: Tpsl;
 }
 
-export interface OrderType {
-  limit?: LimitOrderType;
-  trigger?: TriggerOrderType;
+export interface MarketOrderType {
+  market: Record<string, never>;
 }
 
-export interface OrderTypeWire {
+export type OrderType = {
+  limit?: LimitOrderType;
+  trigger?: TriggerOrderType;
+  market?: Record<string, never>;
+};
+
+export type OrderTypeWire = {
   limit?: LimitOrderType;
   trigger?: TriggerOrderTypeWire;
-}
+  market?: Record<string, never>;
+};
 
 export interface OrderRequest {
   coin: string;

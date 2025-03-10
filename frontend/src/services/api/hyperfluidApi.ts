@@ -15,7 +15,12 @@ export class HyperfluidApiService {
    */
   async initialize(providerNetwork: string = 'mainnet'): Promise<boolean> {
     try {
-      const response = await apiClient.post(`${this.baseUrl}/initialize`, { network: providerNetwork });
+      interface InitResponse {
+        success: boolean;
+        message?: string;
+      }
+      
+      const response = await apiClient.post<InitResponse>(`${this.baseUrl}/initialize`, { network: providerNetwork });
       return response.success;
     } catch (error) {
       console.error('Failed to initialize Hyperfluid service', error);
@@ -28,7 +33,12 @@ export class HyperfluidApiService {
    */
   async isReady(): Promise<boolean> {
     try {
-      const response = await apiClient.get(`${this.baseUrl}/status`);
+      interface StatusResponse {
+        initialized: boolean;
+        message?: string;
+      }
+      
+      const response = await apiClient.get<StatusResponse>(`${this.baseUrl}/status`);
       return response.initialized;
     } catch (error) {
       console.error('Failed to check Hyperfluid service status', error);
@@ -44,7 +54,11 @@ export class HyperfluidApiService {
    * @param flowRate Flow rate per second in wei
    */
   async createFlow(tokenAddress: string, sender: string, receiver: string, flowRate: string): Promise<string> {
-    const response = await apiClient.post(`${this.baseUrl}/flows`, {
+    interface CreateFlowResponse {
+      transactionHash: string;
+    }
+    
+    const response = await apiClient.post<CreateFlowResponse>(`${this.baseUrl}/flows`, {
       tokenAddress,
       sender,
       receiver,
@@ -61,7 +75,11 @@ export class HyperfluidApiService {
    * @param flowRate New flow rate per second in wei
    */
   async updateFlow(tokenAddress: string, sender: string, receiver: string, flowRate: string): Promise<string> {
-    const response = await apiClient.put(`${this.baseUrl}/flows`, {
+    interface UpdateFlowResponse {
+      transactionHash: string;
+    }
+    
+    const response = await apiClient.put<UpdateFlowResponse>(`${this.baseUrl}/flows`, {
       tokenAddress,
       sender,
       receiver,
@@ -77,7 +95,11 @@ export class HyperfluidApiService {
    * @param receiver Receiver address
    */
   async deleteFlow(tokenAddress: string, sender: string, receiver: string): Promise<string> {
-    const response = await apiClient.delete(`${this.baseUrl}/flows`, {
+    interface DeleteFlowResponse {
+      transactionHash: string;
+    }
+    
+    const response = await apiClient.delete<DeleteFlowResponse>(`${this.baseUrl}/flows`, {
       data: {
         tokenAddress,
         sender,
@@ -94,7 +116,11 @@ export class HyperfluidApiService {
    * @param receiver Receiver address
    */
   async getFlow(tokenAddress: string, sender: string, receiver: string): Promise<any> {
-    const response = await apiClient.get(`${this.baseUrl}/flows`, {
+    interface GetFlowResponse {
+      // Add properties as needed
+    }
+    
+    const response = await apiClient.get<GetFlowResponse>(`${this.baseUrl}/flows`, {
       params: {
         tokenAddress,
         sender,
@@ -110,7 +136,11 @@ export class HyperfluidApiService {
    * @param account User address
    */
   async getAccountFlowInfo(tokenAddress: string, account: string): Promise<any> {
-    const response = await apiClient.get(`${this.baseUrl}/accounts/${account}`, {
+    interface GetAccountFlowInfoResponse {
+      // Add properties as needed
+    }
+    
+    const response = await apiClient.get<GetAccountFlowInfoResponse>(`${this.baseUrl}/accounts/${account}`, {
       params: {
         tokenAddress
       }
