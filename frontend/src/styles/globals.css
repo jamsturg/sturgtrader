@@ -1,3 +1,7 @@
+/* 
+ * SturgTrader global styles
+ * Uses Tailwind CSS (VS Code: install "Tailwind CSS IntelliSense" extension to remove warnings)
+ */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

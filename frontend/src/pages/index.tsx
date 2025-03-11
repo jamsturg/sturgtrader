@@ -8,34 +8,57 @@ const Home: React.FC = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [videoEnded, setVideoEnded] = useState(false);
   const [isFading, setIsFading] = useState(false);
-  const [isMuted, setIsMuted] = useState(true); // Start muted to allow autoplay
-  const [userInteracted, setUserInteracted] = useState(false);
+  const [isMuted, setIsMuted] = useState(false); // Start unmuted
+  const [userInteracted, setUserInteracted] = useState(true); // Auto-start
+  const [currentInitStep, setCurrentInitStep] = useState(0);
+  const [showInitText, setShowInitText] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const initAudioRefs = useRef<HTMLAudioElement[]>([]);
+  
+  // Initialization steps with timing
+  const initSteps = [
+    { text: "Initializing Cruze Agents", time: 2000, audioFile: "/audio/init-cruze-agents.mp3" },
+    { text: "Loading Freqtrade AI strategies", time: 2000, audioFile: "/audio/init-freqtrade.mp3" },
+    { text: "Connecting to HyperLiquid Exchange", time: 1800, audioFile: "/audio/init-hyperliquid.mp3" },
+    { text: "Analyzing market conditions", time: 2200, audioFile: "/audio/init-market.mp3" },
+    { text: "Calibrating risk parameters", time: 1900, audioFile: "/audio/init-risk.mp3" },
+    { text: "Synchronizing trading algorithms", time: 2500, audioFile: "/audio/init-algorithms.mp3" },
+    { text: "SturgTrader system initialization complete", time: 2500, audioFile: "/audio/init-complete.mp3" },
+  ];
   
   // Simulate loading effect
   useEffect(() => {
     setIsLoaded(true);
   }, []);
   
-  // Setup autoplay only after user has interacted with the page
+  // Setup autoplay
   useEffect(() => {
     const videoElement = videoRef.current;
     if (videoElement && userInteracted) {
-      // Auto-play video when component mounts (muted for browser autoplay policy)
-      videoElement.muted = true;
-      setIsMuted(true); // Ensure state matches actual muted status
+      // Auto-play video when component mounts (unmuted for better experience)
+      videoElement.muted = false;
+      setIsMuted(false);
       
       const playPromise = videoElement.play();
       if (playPromise !== undefined) {
         playPromise.catch(err => {
           console.error("Video autoplay failed:", err);
+          // If autoplay fails with sound, try muted autoplay as fallback
+          videoElement.muted = true;
+          setIsMuted(true);
+          videoElement.play().catch(e => 
+            console.error("Muted autoplay also failed:", e)
+          );
         });
       }
       
       videoElement.onended = () => {
         handleVideoEnd();
       };
+
+      // Start initialization sequence
+      runInitializationSequence();
     }
 
     // Setup document-wide click listener to detect first interaction
@@ -52,8 +75,47 @@ const Home: React.FC = () => {
     };
   }, [userInteracted]);
 
+  // Run the AI initialization sequence
+  const runInitializationSequence = () => {
+    let currentStep = 0;
+    
+    const runNextStep = () => {
+      if (currentStep < initSteps.length) {
+        setCurrentInitStep(currentStep);
+        
+        // Play the audio for current step
+        try {
+          if (initAudioRefs.current[currentStep]) {
+            initAudioRefs.current[currentStep].play().catch(err => {
+              console.error(`Failed to play init audio ${currentStep}:`, err);
+            });
+          }
+        } catch (error) {
+          console.error("Audio play error:", error);
+        }
+        
+        // Schedule next step
+        setTimeout(() => {
+          currentStep++;
+          if (currentStep < initSteps.length) {
+            runNextStep();
+          } else {
+            // All initialization complete
+            setTimeout(() => {
+              setShowInitText(false);
+            }, 2000);
+          }
+        }, initSteps[currentStep].time);
+      }
+    };
+    
+    // Start sequence
+    runNextStep();
+  };
+
   const handleVideoEnd = () => {
     setIsFading(true);
+    setShowInitText(false);
     
     // Play the welcome voice when starting to fade
     if (audioRef.current && userInteracted) {
@@ -73,6 +135,7 @@ const Home: React.FC = () => {
 
   const handleSkipVideo = () => {
     setUserInteracted(true); // Ensure user interaction is registered
+    setShowInitText(false);
     if (videoRef.current) {
       videoRef.current.pause();
     }
@@ -81,6 +144,7 @@ const Home: React.FC = () => {
 
   const handleDirectLogin = () => {
     setUserInteracted(true); // Ensure user interaction is registered
+    setShowInitText(false);
     if (videoRef.current) {
       videoRef.current.pause();
     }
@@ -103,10 +167,16 @@ const Home: React.FC = () => {
     }
   };
 
+  // Handle video error and audio load errors gracefully
   const handleVideoError = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
     console.error("Video error:", e);
     // If video fails to load, we can skip directly to login
     handleVideoEnd();
+  };
+
+  const handleAudioError = (e: React.SyntheticEvent<HTMLAudioElement, Event>) => {
+    console.error("Audio error:", e);
+    // Continue with normal flow even if audio fails
   };
 
   return (
@@ -121,7 +191,21 @@ const Home: React.FC = () => {
         ref={audioRef} 
         src="/audio/welcome-voice.mp3" 
         preload="auto"
+        onError={handleAudioError}
       />
+
+      {/* Hidden audio elements for initialization steps */}
+      {initSteps.map((step, index) => (
+        <audio
+          key={`init-audio-${index}`}
+          ref={el => {
+            if (el) initAudioRefs.current[index] = el;
+          }}
+          src={step.audioFile}
+          preload="auto"
+          onError={handleAudioError}
+        />
+      ))}
       
       {/* Hero Section */}
       <div className="relative h-screen overflow-hidden">
@@ -181,7 +265,17 @@ const Home: React.FC = () => {
                     onClick={() => {
                       setUserInteracted(true);
                       if (videoRef.current) {
-                        videoRef.current.play().catch(e => console.error("Play failed:", e));
+                        videoRef.current.muted = false;
+                        setIsMuted(false);
+                        videoRef.current.play().catch(e => {
+                          console.error("Play failed:", e);
+                          // Fallback to muted if unmuted fails
+                          videoRef.current!.muted = true;
+                          setIsMuted(true);
+                          videoRef.current!.play().catch(e2 => 
+                            console.error("Muted fallback failed:", e2)
+                          );
+                        });
                       }
                     }}
                   >
@@ -189,13 +283,50 @@ const Home: React.FC = () => {
                   </button>
                 </div>
               )}
+              
+              {/* AI Initialization Text Overlay */}
+              {showInitText && userInteracted && (
+                <div className="absolute left-8 top-1/4 z-20 text-left">
+                  <div className="glass-panel p-6 rounded-xl max-w-md border border-blue-500/30">
+                    <h3 className="text-xl font-bold text-blue-400 mb-4">System Initialization</h3>
+                    <div className="space-y-3">
+                      {initSteps.map((step, idx) => (
+                        <div 
+                          key={`init-step-${idx}`} 
+                          className={`flex items-center ${idx > currentInitStep ? 'opacity-30' : idx === currentInitStep ? 'text-blue-300 font-medium' : 'text-green-300'}`}
+                        >
+                          {idx < currentInitStep ? (
+                            <svg className="w-5 h-5 mr-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                          ) : idx === currentInitStep ? (
+                            <div className="w-5 h-5 mr-2 border-t-2 border-blue-400 rounded-full animate-spin"></div>
+                          ) : (
+                            <div className="w-5 h-5 mr-2 rounded-full border border-gray-500"></div>
+                          )}
+                          <span className={idx === currentInitStep ? 'animate-pulse' : ''}>{step.text}</span>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Progress bar */}
+                    <div className="mt-4 h-1 w-full bg-gray-700 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-to-r from-blue-500 to-purple-600 transition-all duration-500"
+                        style={{ width: `${Math.min(100, (currentInitStep / (initSteps.length - 1)) * 100)}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
               <div className="relative">
                 <video 
                   ref={videoRef}
                   id="introVideo" 
                   className="max-w-full max-h-full object-contain" 
                   autoPlay={false} 
-                  muted={true}
+                  muted={isMuted}
                   playsInline
                   controls={true}
                   onError={handleVideoError}

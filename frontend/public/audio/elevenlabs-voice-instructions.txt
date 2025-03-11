@@ -1,0 +1,45 @@
+# ElevenLabs Voice Instructions for SturgTrader Initialization Sequence
+
+Use these scripts with ElevenLabs to create the audio files for the SturgTrader initialization sequence. 
+Choose a British female voice with a futuristic, professional tone.
+
+## File: init-cruze-agents.mp3
+"Initializing Cruze Agents. Preparing trading environment."
+
+## File: init-freqtrade.mp3
+"Loading Freqtrade AI strategies. Configuring Elliott Wave, MACD, VWAP, and Gucky algorithms."
+
+## File: init-hyperliquid.mp3
+"Connecting to HyperLiquid Exchange. Establishing secure API connections."
+
+## File: init-market.mp3
+"Analyzing market conditions. Processing real-time data feeds."
+
+## File: init-risk.mp3
+"Calibrating risk parameters. Optimizing portfolio allocation across trading strategies."
+
+## File: init-algorithms.mp3
+"Synchronizing trading algorithms. Aligning Freqtrade strategies for optimal performance."
+
+## File: init-complete.mp3
+"SturgTrader system initialization complete. Welcome to the future of algorithmic trading."
+
+## File: welcome-voice.mp3
+"Welcome to SturgTrader, Powered By Cruze Agents. Your advanced trading platform is ready."
+
+## Instructions for ElevenLabs
+
+1. Go to https://elevenlabs.io/
+2. Create an account or sign in
+3. Navigate to the Speech Synthesis tool
+4. Select a British female voice (Rachel or similar)
+5. For each file above, paste the text and adjust settings:
+   - Stability: 25-35% (for a dynamic, natural feel)
+   - Clarity + Similarity Enhancement: 75%
+   - Style Exaggeration: 50-60% (for a slightly dramatic, futuristic feel)
+   
+6. Generate and download each audio file
+7. Place them in the frontend/public/audio/ directory
+8. Files should be named exactly as specified above
+
+Note: The audio should sound professional, slightly futuristic and confident - perfect for a cutting-edge trading platform that integrates multiple Freqtrade strategies.
