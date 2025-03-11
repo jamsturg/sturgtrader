@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import Layout from '../layout/Layout';
 import PriceChart from '../trading/PriceChart';
 import OrderBook from '../trading/OrderBook';
 import TradingForm from '../trading/TradingForm';
@@ -18,27 +17,30 @@ const TradingDashboard: React.FC = () => {
   };
 
   return (
-    <Layout>
-      <div className="mb-4 flex justify-between items-center">
+    <div className="trading-dashboard">
+      <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold">
-            Trading <span className="bright-green-text">Dashboard</span>
+            Trading <span className="bright-blue-text">Dashboard</span>
           </h1>
           <p className="text-[var(--color-neutral)]">Trade across multiple exchanges with advanced analytics</p>
         </div>
         
-        <div className="flex space-x-3 items-center">
+        <div className="flex space-x-4 items-center">
           {/* Pair Selector */}
-          <select 
-            value={selectedPair}
-            onChange={(e) => setSelectedPair(e.target.value)}
-            className="glass-panel px-3 py-2 rounded-md bg-transparent border-none focus:ring-1 focus:ring-[var(--color-positive)]"
-          >
-            <option value="BTC/USDT">BTC/USDT</option>
-            <option value="ETH/USDT">ETH/USDT</option>
-            <option value="XMR/BTC">XMR/BTC</option>
-            <option value="SOL/USDT">SOL/USDT</option>
-          </select>
+          <div className="glass-panel px-3 py-2 rounded-md flex items-center">
+            <span className="mr-2 text-sm text-gray-400">Pair:</span>
+            <select
+              value={selectedPair}
+              onChange={(e) => setSelectedPair(e.target.value)}
+              className="bg-transparent border-none focus:ring-1 focus:ring-[var(--color-positive)] text-white"
+            >
+              <option value="BTC/USDT">BTC/USDT</option>
+              <option value="ETH/USDT">ETH/USDT</option>
+              <option value="XMR/BTC">XMR/BTC</option>
+              <option value="SOL/USDT">SOL/USDT</option>
+            </select>
+          </div>
           
           {/* AR Mode Toggle */}
           <ARToggle isActive={isARMode} onToggle={toggleARMode} />
@@ -48,15 +50,15 @@ const TradingDashboard: React.FC = () => {
       {isARMode ? (
         <div className="ar-container">
           {/* AR Mode will be implemented using Three.js */}
-          <div className="glass-panel h-full flex items-center justify-center">
-            <p className="text-xl">AR Mode Coming Soon</p>
-            <button onClick={toggleARMode} className="btn-primary mt-4">Exit AR Mode</button>
+          <div className="glass-panel h-full flex flex-col items-center justify-center">
+            <p className="text-xl mb-4">AR Mode Coming Soon</p>
+            <button onClick={toggleARMode} className="btn-primary">Exit AR Mode</button>
           </div>
         </div>
       ) : (
-        <div className="trading-grid gap-4">
+        <div className="dashboard-grid">
           {/* Main Chart */}
-          <div className="glass-panel col-span-2 row-span-2 p-4">
+          <div className="glass-panel p-5 dashboard-chart">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">{selectedPair} Chart</h2>
               <div className="flex space-x-2">
@@ -64,48 +66,50 @@ const TradingDashboard: React.FC = () => {
                   <button
                     key={tf}
                     onClick={() => setTimeframe(tf)}
-                    className={`px-3 py-1 rounded-md text-sm ${timeframe === tf ? 'bright-green-bg text-black' : 'bg-gray-700'}`}
+                    className={`px-3 py-1 rounded-md text-sm ${timeframe === tf ? 'bright-blue-bg text-black font-medium' : 'bg-gray-800 hover:bg-gray-700'}`}
                   >
                     {tf}
                   </button>
                 ))}
               </div>
             </div>
-            <PriceChart pair={selectedPair} timeframe={timeframe} />
+            <div className="chart-container">
+              <PriceChart pair={selectedPair} timeframe={timeframe} />
+            </div>
           </div>
           
           {/* Order Book */}
-          <div className="glass-panel row-span-2 p-4">
+          <div className="glass-panel p-5 dashboard-orderbook">
             <h2 className="text-lg font-semibold mb-4">Order Book</h2>
             <OrderBook pair={selectedPair} />
           </div>
           
           {/* Trading Form */}
-          <div className="glass-panel p-4">
+          <div className="glass-panel p-5 dashboard-trading-form">
             <h2 className="text-lg font-semibold mb-4">Place Order</h2>
             <TradingForm pair={selectedPair} />
           </div>
           
           {/* Asset Balance */}
-          <div className="glass-panel p-4">
+          <div className="glass-panel p-5 dashboard-balance">
             <h2 className="text-lg font-semibold mb-4">Balance</h2>
             <AssetBalance />
           </div>
           
           {/* Active Orders */}
-          <div className="glass-panel p-4">
+          <div className="glass-panel p-5 dashboard-active-orders">
             <h2 className="text-lg font-semibold mb-4">Active Orders</h2>
             <ActiveOrders />
           </div>
           
           {/* Recent Transactions */}
-          <div className="glass-panel p-4">
+          <div className="glass-panel p-5 dashboard-transactions">
             <h2 className="text-lg font-semibold mb-4">Recent Transactions</h2>
             <RecentTransactions />
           </div>
         </div>
       )}
-    </Layout>
+    </div>
   );
 };
 

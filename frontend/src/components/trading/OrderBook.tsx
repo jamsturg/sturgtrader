@@ -15,6 +15,8 @@ const OrderBook: React.FC<OrderBookProps> = ({ pair }) => {
   const [buyOrders, setBuyOrders] = useState<Order[]>([]);
   const [sellOrders, setSellOrders] = useState<Order[]>([]);
   const [maxDepth, setMaxDepth] = useState<number>(0);
+  const [spreadPercentage, setSpreadPercentage] = useState<string>('0.00');
+  const [currentPrice, setCurrentPrice] = useState<string>('0.00');
   
   // Generate mock data for demo purposes
   useEffect(() => {
@@ -23,9 +25,14 @@ const OrderBook: React.FC<OrderBookProps> = ({ pair }) => {
     setSellOrders([]);
     
     // Generate mock price based on the pair
-    const basePrice = pair.includes('BTC') ? 40000 : 
-                      pair.includes('ETH') ? 2500 : 
+    const basePrice = pair.includes('BTC') ? 40000 :
+                      pair.includes('ETH') ? 2500 :
                       pair.includes('XMR') ? 180 : 100;
+    
+    setCurrentPrice(basePrice.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }));
                       
     // Generate mock order book data
     const mockBuyOrders: Order[] = [];
@@ -63,6 +70,15 @@ const OrderBook: React.FC<OrderBookProps> = ({ pair }) => {
     const allAmounts = [...mockBuyOrders, ...mockSellOrders].map(o => o.amount);
     setMaxDepth(Math.max(...allAmounts));
     
+    // Calculate spread
+    if (mockBuyOrders.length > 0 && mockSellOrders.length > 0) {
+      const highestBid = mockBuyOrders[0].price;
+      const lowestAsk = mockSellOrders[0].price;
+      const spread = lowestAsk - highestBid;
+      const spreadPct = (spread / highestBid) * 100;
+      setSpreadPercentage(spreadPct.toFixed(2));
+    }
+    
     setBuyOrders(mockBuyOrders);
     setSellOrders(mockSellOrders);
   }, [pair]);
@@ -74,51 +90,55 @@ const OrderBook: React.FC<OrderBookProps> = ({ pair }) => {
   
   return (
     <div className="flex flex-col h-full">
-      <div className="flex justify-between text-sm text-gray-400 mb-2 px-1">
-        <div className="w-1/3">Price</div>
-        <div className="w-1/3 text-center">Amount</div>
-        <div className="w-1/3 text-right">Total</div>
+      <div className="flex justify-between text-xs font-medium bg-gray-800 rounded-t-md py-2 px-3 mb-1">
+        <div className="w-1/3">PRICE</div>
+        <div className="w-1/3 text-center">AMOUNT</div>
+        <div className="w-1/3 text-right">TOTAL</div>
       </div>
       
       {/* Sell Orders (red) */}
-      <div className="overflow-y-auto flex-1 mb-4">
+      <div className="overflow-y-auto flex-1 scrollbar-thin mb-2">
         {sellOrders.map((order, index) => (
-          <div key={`sell-${index}`} className="flex justify-between relative py-1 px-1 text-sm hover:bg-white/5">
+          <div key={`sell-${index}`} className="flex justify-between relative py-1 px-2 text-sm hover:bg-gray-800/30 border-b border-gray-800/30">
             {/* Depth visualization */}
-            <div 
-              className="absolute right-0 top-0 h-full bg-red-500/10" 
+            <div
+              className="absolute right-0 top-0 h-full bg-red-500/10"
               style={{ width: `${getDepthPercentage(order.amount)}%` }}
             />
             
-            <div className="w-1/3 text-red-400 z-10">{order.price.toFixed(2)}</div>
-            <div className="w-1/3 text-center z-10">{order.amount.toFixed(5)}</div>
-            <div className="w-1/3 text-right z-10">{order.total.toFixed(2)}</div>
+            <div className="w-1/3 text-red-400 z-10 font-medium">{order.price.toFixed(2)}</div>
+            <div className="w-1/3 text-center z-10 text-gray-300">{order.amount.toFixed(5)}</div>
+            <div className="w-1/3 text-right z-10 text-gray-300">{order.total.toFixed(2)}</div>
           </div>
         ))}
       </div>
       
-      {/* Current price */}
-      <div className="py-2 px-1 glass-panel metal-edge mb-4">
-        <div className="text-center text-xl bright-green-text font-bold">
-          {pair.includes('BTC') ? '40,000.00' : 
-           pair.includes('ETH') ? '2,500.00' : 
-           pair.includes('XMR') ? '180.00' : '100.00'}
+      {/* Spread & Current price */}
+      <div className="py-3 px-3 glass-panel metal-edge mb-2 flex justify-between items-center">
+        <div className="text-gray-400 text-sm">
+          Spread: <span className="text-white">{spreadPercentage}%</span>
+        </div>
+        <div className="text-center text-xl bright-blue-text font-bold">
+          {currentPrice}
+        </div>
+        <div className="text-gray-400 text-sm">
+          <span className="text-xs">24h</span> <span className="text-green-400">+1.2%</span>
         </div>
       </div>
       
       {/* Buy Orders (green) */}
-      <div className="overflow-y-auto flex-1">
+      <div className="overflow-y-auto flex-1 scrollbar-thin">
         {buyOrders.map((order, index) => (
-          <div key={`buy-${index}`} className="flex justify-between relative py-1 px-1 text-sm hover:bg-white/5">
+          <div key={`buy-${index}`} className="flex justify-between relative py-1 px-2 text-sm hover:bg-gray-800/30 border-b border-gray-800/30">
             {/* Depth visualization */}
-            <div 
-              className="absolute right-0 top-0 h-full bg-green-500/10" 
+            <div
+              className="absolute right-0 top-0 h-full bg-green-500/10"
               style={{ width: `${getDepthPercentage(order.amount)}%` }}
             />
             
-            <div className="w-1/3 text-green-400 z-10">{order.price.toFixed(2)}</div>
-            <div className="w-1/3 text-center z-10">{order.amount.toFixed(5)}</div>
-            <div className="w-1/3 text-right z-10">{order.total.toFixed(2)}</div>
+            <div className="w-1/3 text-green-400 z-10 font-medium">{order.price.toFixed(2)}</div>
+            <div className="w-1/3 text-center z-10 text-gray-300">{order.amount.toFixed(5)}</div>
+            <div className="w-1/3 text-right z-10 text-gray-300">{order.total.toFixed(2)}</div>
           </div>
         ))}
       </div>

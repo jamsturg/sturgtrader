@@ -383,7 +383,7 @@ const Home: React.FC = () => {
                   onClick={handleDirectLogin}
                   className="px-6 py-3 bright-blue-bg hover:bg-blue-500 rounded-md text-black font-medium transition-all duration-300 backdrop-blur-sm"
                 >
-                  Login To To The Bank
+                  Login To The Bank
                 </button>
               </div>
             </div>

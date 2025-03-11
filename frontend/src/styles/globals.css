@@ -101,13 +101,68 @@ body {
     @apply rounded-md px-4 py-2 font-medium transition-all duration-200 text-white bg-gradient-to-r from-[#8A8D91] to-[#646669] hover:shadow-[0_0_15px_rgba(138,141,145,0.7)];
   }
 
-  /* Trading chart grid */
-  .trading-grid {
+  /* Dashboard grid layout */
+  .dashboard-grid {
     display: grid;
-    grid-template-columns: 3fr 1fr;
-    grid-template-rows: auto 1fr auto;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 1fr);
+    grid-template-areas:
+      "chart orderbook"
+      "chart trading-form"
+      "active-orders balance"
+      "transactions balance";
     gap: 1rem;
-    height: calc(100vh - 4rem);
+    height: calc(100vh - 8rem);
+  }
+
+  .dashboard-chart {
+    grid-area: chart;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .chart-container {
+    flex: 1;
+    min-height: 0;
+    position: relative;
+  }
+
+  .dashboard-orderbook {
+    grid-area: orderbook;
+  }
+
+  .dashboard-trading-form {
+    grid-area: trading-form;
+  }
+
+  .dashboard-active-orders {
+    grid-area: active-orders;
+  }
+
+  .dashboard-balance {
+    grid-area: balance;
+  }
+
+  .dashboard-transactions {
+    grid-area: transactions;
+  }
+
+  /* Responsive layout for mobile */
+  @media (max-width: 1024px) {
+    .dashboard-grid {
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        "chart"
+        "orderbook"
+        "trading-form"
+        "balance"
+        "active-orders"
+        "transactions";
+      height: auto;
+    }
+    
+    .dashboard-chart {
+      height: 400px;
+    }
   }
 
   /* For AR mode */
