@@ -1,21 +1,11 @@
 {
   "version": 2,
-  "buildCommand": "next build",
-  "outputDirectory": ".next",
   "framework": "nextjs",
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/next"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/" }
   ],
   "env": {
-    "NEXT_PUBLIC_API_URL": "/api"
+    "NEXT_PUBLIC_API_URL": "http://localhost:3001/api",
+    "NEXT_PUBLIC_FREQTRADE_DASHBOARD_URL": "http://localhost:8080"
   }
 }
