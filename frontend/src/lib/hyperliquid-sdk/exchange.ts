@@ -62,13 +62,13 @@ export class Exchange extends API {
         }
       | {
           type: 'order';
-          grouping;
+          grouping: string | number | null;
           orders: OrderWire[];
         }
       | {
           type: 'usdTransfer';
-          chain;
-          payload;
+          chain: string;
+          payload: any;
         },
     signature: { r: string; s: string; v: number },
     nonce: number,

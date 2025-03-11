@@ -1,10 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import AnalyticsMetricsCard from './AnalyticsMetricsCard';
 
+interface MetricData {
+  value: number;
+  trend: number;
+}
+
+interface AnalyticsMetrics {
+  profitLoss: MetricData;
+  volume: MetricData;
+  activeBots: MetricData;
+  completedTrades: MetricData;
+}
+
 const AnalyticsDashboard: React.FC = () => {
   const [timeframe, setTimeframe] = useState<'day' | 'week' | 'month'>('week');
   const [isLoading, setIsLoading] = useState(true);
-  const [metrics, setMetrics] = useState(null);
+  const [metrics, setMetrics] = useState<AnalyticsMetrics | null>(null);
 
   // Fetch metrics data
   useEffect(() => {

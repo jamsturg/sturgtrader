@@ -1,11 +1,10 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { mergeBufferGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { Box, Card, Typography, Button, IconButton, Slider, FormControl, Select, MenuItem, InputLabel, Switch, FormControlLabel } from '@mui/material';
 import { Refresh, CameraAlt, ViewInAr, Compare, Timeline, ShowChart, Settings } from '@mui/icons-material';
-import { ApiClient } from '../../services/api/ApiClient';
+import apiClient from '../../services/api/apiClient';
 import './ARVisualization.css';
 
 // Types for market data
@@ -30,6 +29,14 @@ interface ARVisualizationProps {
   mode?: 'candlestick' | 'depth' | 'volume' | 'combined';
   theme?: 'dark' | 'light';
   renderQuality?: 'low' | 'medium' | 'high';
+}
+
+interface CandlestickResponse {
+  data: CandlestickData[];
+}
+
+interface DepthResponse {
+  data: MarketDepth;
 }
 
 export const ARVisualization: React.FC<ARVisualizationProps> = ({
@@ -78,12 +85,12 @@ export const ARVisualization: React.FC<ARVisualizationProps> = ({
   
   // Fetch market data
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchMarketData = async () => {
       try {
         setIsLoading(true);
         
         // Fetch candlestick data
-        const candlestickResponse = await ApiClient.get(
+        const candlestickResponse: CandlestickResponse = await apiClient.get(
           `/api/market-data/${exchange}/${symbol.replace('/', '-')}/candles`, {
             params: { timeframe, limit: 100 }
           }
@@ -91,7 +98,7 @@ export const ARVisualization: React.FC<ARVisualizationProps> = ({
         setMarketData(candlestickResponse.data);
         
         // Fetch depth data
-        const depthResponse = await ApiClient.get(
+        const depthResponse: DepthResponse = await apiClient.get(
           `/api/market-data/${exchange}/${symbol.replace('/', '-')}/depth`
         );
         setDepthData(depthResponse.data);
@@ -105,10 +112,10 @@ export const ARVisualization: React.FC<ARVisualizationProps> = ({
       }
     };
     
-    fetchData();
+    fetchMarketData();
     
     // Setup refresh interval
-    const intervalId = setInterval(fetchData, 60000); // Refresh every minute
+    const intervalId = setInterval(fetchMarketData, 60000); // Refresh every minute
     
     return () => clearInterval(intervalId);
   }, [exchange, symbol, timeframe]);
@@ -118,12 +125,15 @@ export const ARVisualization: React.FC<ARVisualizationProps> = ({
     if (!containerRef.current) return;
     
     // Setup renderer
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true, 
+      alpha: true
+    });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    renderer.outputEncoding = THREE.sRGBEncoding;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.2;
     containerRef.current.appendChild(renderer.domElement);

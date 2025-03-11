@@ -258,7 +258,7 @@ export class EnhancedHyperliquidService {
       const change24h = this.calculateChange24h(candles);
       
       // Get L2 book for volume estimation
-      const l2Data = await this.info.l2Snapshot(symbol);
+      const l2Data = await this.getL2Snapshot(symbol);
       const openInterest = this.estimateOpenInterest(l2Data.levels);
       
       return {
@@ -273,6 +273,18 @@ export class EnhancedHyperliquidService {
     } catch (error) {
       console.error(`Error fetching market data for ${symbol}:`, error);
       return null;
+    }
+  }
+
+  /**
+   * Get order book L2 snapshot for a symbol
+   */
+  public async getL2Snapshot(symbol: string): Promise<any> {
+    try {
+      return await this.info.l2Snapshot(symbol);
+    } catch (error) {
+      console.error(`Error fetching L2 snapshot for ${symbol}:`, error);
+      throw error;
     }
   }
 

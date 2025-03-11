@@ -1,4 +1,4 @@
-import { AbiCoder, Wallet, keccak256 } from 'ethers';
+import { utils, Wallet } from 'ethers';
 import { OrderType, OrderTypeWire } from './types';
 
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
@@ -113,11 +113,11 @@ export function constructPhantomAgent(
   signatureTypes: string[],
   signatureData: any[],
 ): { source: string; connectionId: string } {
-  const coder = new AbiCoder();
+  const coder = new utils.AbiCoder();
   const connectionId = coder.encode(signatureTypes, signatureData);
   return {
     source: 'a',
-    connectionId: keccak256(connectionId),
+    connectionId: utils.keccak256(connectionId),
   };
 }
 
@@ -140,7 +140,7 @@ export async function signL1Action(
   const phantomAgent = constructPhantomAgent(signatureTypes, signatureData);
 
   return Tl(
-    await wallet.signTypedData(
+    await wallet._signTypedData(
       {
         chainId: 1337,
         name: 'Exchange',
@@ -167,7 +167,7 @@ export async function signUsdTransferAction(
   },
 ): Promise<{ r: string; s: string; v: number }> {
   return Tl(
-    await wallet.signTypedData(
+    await wallet._signTypedData(
       {
         chainId: 42161,
         name: 'Exchange',

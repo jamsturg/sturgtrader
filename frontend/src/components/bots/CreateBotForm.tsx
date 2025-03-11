@@ -1,12 +1,22 @@
 import React, { useState } from 'react';
 
 interface CreateBotFormProps {
-  onSubmit: (botData: any) => void;
+  onSubmit: (botData: BotFormData) => void;
   onCancel: () => void;
 }
 
+interface BotFormData {
+  name: string;
+  type: string;
+  exchanges: string[];
+  tradingPairs: string[];
+  riskLevel: string;
+  maxTradeSize: number;
+  description: string;
+}
+
 const CreateBotForm: React.FC<CreateBotFormProps> = ({ onSubmit, onCancel }) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<BotFormData>({
     name: '',
     type: 'arbitrage',
     exchanges: [],

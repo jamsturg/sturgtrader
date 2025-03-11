@@ -39,7 +39,7 @@ const HyperliquidOrderBook: React.FC<HyperliquidOrderBookProps> = ({
         setError(null);
         
         // Initial order book snapshot
-        const l2Data = await enhancedHyperliquidService.info.l2Snapshot(symbol);
+        const l2Data = await enhancedHyperliquidService.getL2Snapshot(symbol);
         
         if (!isMounted) return;
         

@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Box, Card, Typography, Button, Grid, Chip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, IconButton, Switch, FormControlLabel } from '@mui/material';
 import { PlayArrow, Stop, Refresh, Launch, Settings, TrendingUp } from '@mui/icons-material';
 import { io, Socket } from 'socket.io-client';
-import { ApiClient } from '../../services/api/ApiClient';
+import apiClient from '../../services/api/apiClient';
 import './ArbitragePanel.css';
 
 // Types for the component
@@ -50,11 +49,28 @@ interface ArbitrageConfig {
   };
 }
 
+interface SystemStatus {
+  active: boolean;
+  status: string;
+}
+
+interface OpportunitiesResponse {
+  opportunities: ArbitrageOpportunity[];
+}
+
+interface StatusResponse {
+  data: SystemStatus;
+}
+
+interface StatsResponse {
+  data: ArbitrageStats;
+}
+
 export const ArbitragePanel: React.FC = () => {
   // State variables
   const [opportunities, setOpportunities] = useState<ArbitrageOpportunity[]>([]);
   const [stats, setStats] = useState<ArbitrageStats | null>(null);
-  const [systemStatus, setSystemStatus] = useState<{ active: boolean; status: string } | null>(null);
+  const [systemStatus, setSystemStatus] = useState<SystemStatus | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -70,15 +86,15 @@ export const ArbitragePanel: React.FC = () => {
         setIsLoading(true);
         
         // Fetch opportunities
-        const opportunitiesResponse = await ApiClient.get('/api/arbitrage/opportunities');
-        setOpportunities(opportunitiesResponse.data.opportunities);
+        const opportunitiesResponse: OpportunitiesResponse = await apiClient.get('/api/arbitrage/opportunities');
+        setOpportunities(opportunitiesResponse.opportunities);
         
         // Fetch system status
-        const statusResponse = await ApiClient.get('/api/arbitrage/status');
+        const statusResponse: StatusResponse = await apiClient.get('/api/arbitrage/status');
         setSystemStatus(statusResponse.data);
         
         // Fetch stats
-        const statsResponse = await ApiClient.get('/api/arbitrage/stats');
+        const statsResponse: StatsResponse = await apiClient.get('/api/arbitrage/stats');
         setStats(statsResponse.data);
         
         setError(null);
@@ -111,7 +127,7 @@ export const ArbitragePanel: React.FC = () => {
   // Fetch stats
   const fetchStats = useCallback(async () => {
     try {
-      const response = await ApiClient.get('/api/arbitrage/stats');
+      const response: StatsResponse = await apiClient.get('/api/arbitrage/stats');
       setStats(response.data);
     } catch (err) {
       console.error('Error fetching arbitrage stats:', err);
@@ -122,13 +138,13 @@ export const ArbitragePanel: React.FC = () => {
   const handleSystemToggle = async () => {
     try {
       if (systemStatus?.active) {
-        await ApiClient.post('/api/arbitrage/stop');
+        await apiClient.post('/api/arbitrage/stop');
       } else {
-        await ApiClient.post('/api/arbitrage/start');
+        await apiClient.post('/api/arbitrage/start');
       }
       
       // Update system status
-      const statusResponse = await ApiClient.get('/api/arbitrage/status');
+      const statusResponse: StatusResponse = await apiClient.get('/api/arbitrage/status');
       setSystemStatus(statusResponse.data);
     } catch (err) {
       console.error('Error toggling arbitrage system:', err);
@@ -139,12 +155,12 @@ export const ArbitragePanel: React.FC = () => {
   // Execute opportunity
   const executeOpportunity = async (opportunityId: string) => {
     try {
-      const response = await ApiClient.post(`/api/arbitrage/opportunities/${opportunityId}/execute`);
+      const response: { status: number } = await apiClient.post(`/api/arbitrage/opportunities/${opportunityId}/execute`);
       
       if (response.status === 200) {
         // Update opportunities list
-        const opportunitiesResponse = await ApiClient.get('/api/arbitrage/opportunities');
-        setOpportunities(opportunitiesResponse.data.opportunities);
+        const opportunitiesResponse: OpportunitiesResponse = await apiClient.get('/api/arbitrage/opportunities');
+        setOpportunities(opportunitiesResponse.opportunities);
       }
     } catch (err) {
       console.error('Error executing arbitrage opportunity:', err);
