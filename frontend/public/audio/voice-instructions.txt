@@ -1,0 +1,16 @@
+To create the British female futuristic voice saying:
+"Welcome to SturgTrader, Powered By Cruze Agents."
+
+You can use one of these services:
+
+1. ElevenLabs (https://elevenlabs.io/) - They have excellent British female voices 
+   - Rachel or Bella voices work well
+   - Add slight robotic/echo effect for futuristic feel
+
+2. Free alternatives:
+   - https://anyvoicelab.com/voices/british-woman-voice/
+   - https://accentgenerator.com/free-british-text-to-speech-converter/
+   - https://ttsfree.com/text-to-speech/english-united-kingdom
+
+When you have the audio file, save it as "welcome-voice.mp3" in this directory.
+The code is already set up to play it when the video fades out.

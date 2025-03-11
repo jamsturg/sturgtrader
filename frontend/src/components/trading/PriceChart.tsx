@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import * as THREE from 'three';
 import { useThree, Canvas } from '@react-three/fiber';
 import { OrbitControls, Text } from '@react-three/drei';
+import * as THREE from 'three';
 
 interface PriceChartProps {
   pair: string;
@@ -108,14 +108,14 @@ const StandardChart: React.FC<PriceChartProps> = ({ pair, timeframe }) => {
       const lowY = height - ((candle.low - minPrice) / priceRange) * height;
       
       // Draw the wick
-      ctx.strokeStyle = candle.open > candle.close ? '#FF4444' : '#00FF66';
+      ctx.strokeStyle = candle.open > candle.close ? '#FF4444' : '#0099FF';
       ctx.beginPath();
       ctx.moveTo(x + candleWidth / 2, highY);
       ctx.lineTo(x + candleWidth / 2, lowY);
       ctx.stroke();
       
       // Draw the candle body
-      ctx.fillStyle = candle.open > candle.close ? '#FF4444' : '#00FF66';
+      ctx.fillStyle = candle.open > candle.close ? '#FF4444' : '#0099FF';
       ctx.fillRect(
         x + 1,
         Math.min(openY, closeY),
@@ -207,18 +207,18 @@ const PriceVisualization = ({ data, pair }: { data: any[], pair: string }) => {
   
   // Create materials
   const greenMaterial = new THREE.MeshStandardMaterial({ 
-    color: 0x00FF66,
+    color: '#0099FF',
     metalness: 0.7,
     roughness: 0.2,
-    emissive: 0x00FF66,
+    emissive: '#0099FF',
     emissiveIntensity: 0.2
   });
   
   const redMaterial = new THREE.MeshStandardMaterial({ 
-    color: 0xFF4444,
+    color: '#FF4444',
     metalness: 0.7,
     roughness: 0.2,
-    emissive: 0xFF4444,
+    emissive: '#FF4444',
     emissiveIntensity: 0.2
   });
 
@@ -227,7 +227,7 @@ const PriceVisualization = ({ data, pair }: { data: any[], pair: string }) => {
       {/* Price surface */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2, 0]}>
         <planeGeometry args={[15, 10]} />
-        <meshStandardMaterial color="#333333" />
+        <meshBasicMaterial color="#333333" />
       </mesh>
       
       {/* Data points */}
@@ -255,9 +255,9 @@ const PriceVisualization = ({ data, pair }: { data: any[], pair: string }) => {
       <group position={[0, 3, 0]}>
         <Text 
           fontSize={0.5}
-          color="#00FF66"
           anchorX="center"
           anchorY="middle"
+          color="#0099FF"
         >
           {pair}
         </Text>

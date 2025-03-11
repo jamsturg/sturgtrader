@@ -103,7 +103,8 @@ export class EnhancedHyperliquidService {
   public async getPositions(): Promise<Position[]> {
     try {
       if (!this.wallet) {
-        throw new Error('Authentication required for this operation');
+        console.warn('Authentication required to fetch positions');
+        return [];
       }
 
       const userState: UserState = await this.info.userState(this.wallet.address);
@@ -140,7 +141,7 @@ export class EnhancedHyperliquidService {
       return positions;
     } catch (error) {
       console.error('Error fetching positions:', error);
-      throw error;
+      return [];
     }
   }
 
@@ -150,7 +151,8 @@ export class EnhancedHyperliquidService {
   public async getOpenOrders(): Promise<Order[]> {
     try {
       if (!this.wallet) {
-        throw new Error('Authentication required for this operation');
+        console.warn('Authentication required to fetch open orders');
+        return [];
       }
 
       const openOrders: OpenOrders = await this.info.openOrders(this.wallet.address);
@@ -170,7 +172,7 @@ export class EnhancedHyperliquidService {
       return orders;
     } catch (error) {
       console.error('Error fetching open orders:', error);
-      throw error;
+      return [];
     }
   }
 
@@ -180,7 +182,8 @@ export class EnhancedHyperliquidService {
   public async getRecentTransactions(): Promise<Transaction[]> {
     try {
       if (!this.wallet) {
-        throw new Error('Authentication required for this operation');
+        console.warn('Authentication required to fetch transactions');
+        return [];
       }
 
       const fills: Fills = await this.info.userFills(this.wallet.address);
@@ -199,7 +202,7 @@ export class EnhancedHyperliquidService {
       return transactions;
     } catch (error) {
       console.error('Error fetching recent transactions:', error);
-      throw error;
+      return [];
     }
   }
 
@@ -284,7 +287,8 @@ export class EnhancedHyperliquidService {
       return await this.info.l2Snapshot(symbol);
     } catch (error) {
       console.error(`Error fetching L2 snapshot for ${symbol}:`, error);
-      throw error;
+      // Return empty object instead of throwing
+      return { levels: [] };
     }
   }
 
@@ -323,7 +327,11 @@ export class EnhancedHyperliquidService {
   public async placeOrder(params: OrderParams): Promise<any> {
     try {
       if (!this.exchange) {
-        throw new Error('Authentication required for this operation');
+        return {
+          success: false,
+          data: null,
+          message: 'Authentication required for this operation'
+        };
       }
       
       // Convert order type to SDK format
@@ -351,11 +359,18 @@ export class EnhancedHyperliquidService {
       return {
         success: result.status === 'ok',
         data: result.response,
-        message: result.status === 'ok' ? 'Order placed successfully' : result.response?.error || 'Failed to place order'
+        message: result.status === 'ok' ? 'Order placed successfully' : 
+          (result.response?.data?.statuses?.[0] && typeof result.response.data.statuses[0] !== 'string' 
+            ? result.response.data.statuses[0].error 
+            : 'Failed to place order')
       };
     } catch (error) {
       console.error('Error placing order:', error);
-      throw error;
+      return {
+        success: false,
+        data: null,
+        message: 'Error placing order: ' + (error instanceof Error ? error.message : 'Unknown error')
+      };
     }
   }
 
@@ -365,7 +380,11 @@ export class EnhancedHyperliquidService {
   public async cancelOrder(symbol: string, orderId: string): Promise<any> {
     try {
       if (!this.exchange) {
-        throw new Error('Authentication required for this operation');
+        return {
+          success: false,
+          data: null,
+          message: 'Authentication required for this operation'
+        };
       }
       
       const result = await this.exchange.cancel(symbol, parseInt(orderId));
@@ -377,7 +396,11 @@ export class EnhancedHyperliquidService {
       };
     } catch (error) {
       console.error('Error cancelling order:', error);
-      throw error;
+      return {
+        success: false,
+        data: null,
+        message: 'Error cancelling order: ' + (error instanceof Error ? error.message : 'Unknown error')
+      };
     }
   }
 
