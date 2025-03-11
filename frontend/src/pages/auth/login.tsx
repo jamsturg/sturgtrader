@@ -58,7 +58,7 @@ const Login: React.FC = () => {
         <div className="glass-panel p-8 rounded-xl w-full max-w-md shadow-xl relative z-10 border border-[var(--glass-border)]">
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold text-white">Welcome Back</h2>
-            <p className="text-gray-400 mt-2">Log in to access your SturgTrader account</p>
+            <p className="text-gray-400 mt-2">Log in to access your The Bank account</p>
           </div>
           
           {error && (

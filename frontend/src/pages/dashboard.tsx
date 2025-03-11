@@ -79,7 +79,7 @@ const Dashboard: React.FC = () => {
         <h1 className="text-3xl font-bold">
           Dashboard <span className="bright-green-text">Overview</span>
         </h1>
-        <p className="text-[var(--color-neutral)]">Welcome to SturgTrader, your advanced crypto trading platform.</p>
+        <p className="text-[var(--color-neutral)]">Welcome to The Bank, your advanced crypto trading platform.</p>
       </div>
       
       {/* Subscription Alert Banner - Show if not subscribed */}

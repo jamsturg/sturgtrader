@@ -64,7 +64,7 @@ const LoginPage: React.FC = () => {
       <div className="glass-panel p-8 rounded-xl w-full max-w-md z-10">
         {/* Logo and title */}
         <div className="text-center mb-8">
-          <div className="text-3xl font-bold bright-green-text mb-1">STURG<span className="text-white">TRADER</span></div>
+          <div className="text-3xl font-bold bright-green-text mb-1">TO THE <span className="text-white">BANK</span></div>
           <p className="text-[var(--color-neutral)]">Advanced Crypto Trading Platform</p>
         </div>
         
@@ -166,7 +166,7 @@ const LoginPage: React.FC = () => {
           </svg>
           <span className="text-sm font-medium">Augmented Reality Trading Experience</span>
         </div>
-        <p className="text-xs text-gray-400">SturgTrader offers immersive AR visualization of market data. Sign in to experience the future of trading.</p>
+        <p className="text-xs text-gray-400">The Bank offers immersive AR visualization of market data. Sign in to experience the future of trading.</p>
       </div>
     </div>
   );

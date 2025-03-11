@@ -105,7 +105,7 @@ const TradingStrategies: React.FC = () => {
   };
 
   return (
-    <Layout title="Freqtrade Strategies - SturgTrader">
+    <Layout title="Freqtrade Strategies - The Bank">
       <div className="mb-6">
         <h1 className="text-3xl font-bold">
           Freqtrade <span className="bright-green-text">Strategy Management</span>

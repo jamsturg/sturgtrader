@@ -1,9 +1,9 @@
 # Voice Audio Instructions
 
-To complete the "Welcome to SturgTrader" voice feature, you need to:
+To complete the "Welcome to The Bank" voice feature, you need to:
 
 1. Create an audio file with a British female futuristic voice saying:
-   > "Welcome to SturgTrader, Powered By Cruze Agents."
+   > "Welcome to The Bank, Powered By Cruze Agents."
 
 2. Save the file as `welcome-voice.mp3` in this directory.
 

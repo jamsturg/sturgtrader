@@ -12,6 +12,7 @@ const Home: React.FC = () => {
   const [userInteracted, setUserInteracted] = useState(true); // Auto-start
   const [currentInitStep, setCurrentInitStep] = useState(0);
   const [showInitText, setShowInitText] = useState(true);
+  const [initComplete, setInitComplete] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const initAudioRefs = useRef<HTMLAudioElement[]>([]);
@@ -24,7 +25,7 @@ const Home: React.FC = () => {
     { text: "Analyzing market conditions", time: 2200, audioFile: "/audio/init-market.mp3" },
     { text: "Calibrating risk parameters", time: 1900, audioFile: "/audio/init-risk.mp3" },
     { text: "Synchronizing trading algorithms", time: 2500, audioFile: "/audio/init-algorithms.mp3" },
-    { text: "SturgTrader system initialization complete", time: 2500, audioFile: "/audio/init-complete.mp3" },
+    { text: "To The Bank system initialization complete", time: 2500, audioFile: "/audio/init-complete.mp3" },
   ];
   
   // Simulate loading effect
@@ -102,7 +103,8 @@ const Home: React.FC = () => {
           } else {
             // All initialization complete
             setTimeout(() => {
-              setShowInitText(false);
+              setInitComplete(true);
+              // Keep the text visible until video ends
             }, 2000);
           }
         }, initSteps[currentStep].time);
@@ -115,7 +117,6 @@ const Home: React.FC = () => {
 
   const handleVideoEnd = () => {
     setIsFading(true);
-    setShowInitText(false);
     
     // Play the welcome voice when starting to fade
     if (audioRef.current && userInteracted) {
@@ -127,6 +128,11 @@ const Home: React.FC = () => {
       }
     }
     
+    // Hide init text only after video has completed and initialization is done
+    if (initComplete) {
+      setShowInitText(false);
+    }
+    
     // Add a delay before showing login screen to allow for fade effect
     setTimeout(() => {
       setVideoEnded(true);
@@ -135,19 +141,22 @@ const Home: React.FC = () => {
 
   const handleSkipVideo = () => {
     setUserInteracted(true); // Ensure user interaction is registered
-    setShowInitText(false);
     if (videoRef.current) {
       videoRef.current.pause();
     }
+    // Don't hide init text, but mark as complete to enable transition
+    setInitComplete(true);
     handleVideoEnd();
   };
 
   const handleDirectLogin = () => {
     setUserInteracted(true); // Ensure user interaction is registered
-    setShowInitText(false);
     if (videoRef.current) {
       videoRef.current.pause();
     }
+    // Skip initialization and go directly to login
+    setInitComplete(true);
+    setShowInitText(false);
     router.push('/auth/login');
   };
 
@@ -182,8 +191,8 @@ const Home: React.FC = () => {
   return (
     <div className="min-h-screen bg-[var(--color-background)] text-white">
       <Head>
-        <title>SturgTrader - AR-Enhanced Trading Platform</title>
-        <meta name="description" content="Experience the future of trading with SturgTrader's AR visualization and cross-exchange arbitrage" />
+        <title>To The Bank - AR-Enhanced Trading Platform</title>
+        <meta name="description" content="Experience the future of trading with To The Bank's AR visualization and cross-exchange arbitrage" />
       </Head>
       
       {/* Hidden audio element for welcome voice */}
@@ -216,7 +225,7 @@ const Home: React.FC = () => {
         {/* Navigation */}
         {videoEnded && (
           <nav className="absolute top-0 left-0 right-0 z-20 glass-panel px-6 py-4 flex justify-between items-center">
-            <div className="text-2xl font-bold bright-blue-text">STURG<span className="text-white">TRADER</span></div>
+            <div className="text-2xl font-bold bright-blue-text">TO THE <span className="text-white">BANK</span></div>
             
             <div className="hidden md:flex space-x-6">
               <NavLink href="#features">Features</NavLink>
@@ -286,49 +295,53 @@ const Home: React.FC = () => {
               
               {/* AI Initialization Text Overlay */}
               {showInitText && userInteracted && (
-                <div className="absolute left-8 top-1/4 z-20 text-left">
-                  <div className="glass-panel p-6 rounded-xl max-w-md border border-blue-500/30">
-                    <h3 className="text-xl font-bold text-blue-400 mb-4">System Initialization</h3>
-                    <div className="space-y-3">
+                <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
+                  <div className="glass-panel p-8 rounded-xl w-full max-w-2xl border border-blue-500/30 backdrop-blur-md bg-black/40">
+                    <h3 className="text-2xl font-bold text-blue-400 mb-6 text-center">System Initialization</h3>
+                    <div className="space-y-4">
                       {initSteps.map((step, idx) => (
-                        <div 
-                          key={`init-step-${idx}`} 
+                        <div
+                          key={`init-step-${idx}`}
                           className={`flex items-center ${idx > currentInitStep ? 'opacity-30' : idx === currentInitStep ? 'text-blue-300 font-medium' : 'text-green-300'}`}
                         >
                           {idx < currentInitStep ? (
-                            <svg className="w-5 h-5 mr-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <svg className="w-6 h-6 mr-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
                             </svg>
                           ) : idx === currentInitStep ? (
-                            <div className="w-5 h-5 mr-2 border-t-2 border-blue-400 rounded-full animate-spin"></div>
+                            <div className="w-6 h-6 mr-3 border-t-2 border-blue-400 rounded-full animate-spin"></div>
                           ) : (
-                            <div className="w-5 h-5 mr-2 rounded-full border border-gray-500"></div>
+                            <div className="w-6 h-6 mr-3 rounded-full border border-gray-500"></div>
                           )}
-                          <span className={idx === currentInitStep ? 'animate-pulse' : ''}>{step.text}</span>
+                          <span className={`text-lg ${idx === currentInitStep ? 'animate-pulse' : ''}`}>{step.text}</span>
                         </div>
                       ))}
                     </div>
                     
                     {/* Progress bar */}
-                    <div className="mt-4 h-1 w-full bg-gray-700 rounded-full overflow-hidden">
-                      <div 
+                    <div className="mt-6 h-2 w-full bg-gray-700 rounded-full overflow-hidden">
+                      <div
                         className="h-full bg-gradient-to-r from-blue-500 to-purple-600 transition-all duration-500"
                         style={{ width: `${Math.min(100, (currentInitStep / (initSteps.length - 1)) * 100)}%` }}
                       ></div>
+                    </div>
+                    
+                    <div className="mt-6 text-center text-gray-300 text-sm">
+                      {initComplete ? "Initialization complete. Preparing interface..." : "Running system diagnostics..."}
                     </div>
                   </div>
                 </div>
               )}
               
-              <div className="relative">
-                <video 
+              <div className="relative w-full h-full">
+                <video
                   ref={videoRef}
-                  id="introVideo" 
-                  className="max-w-full max-h-full object-contain" 
-                  autoPlay={false} 
+                  id="introVideo"
+                  className="absolute inset-0 w-full h-full object-cover"
+                  autoPlay={true}
                   muted={isMuted}
                   playsInline
-                  controls={true}
+                  controls={false}
                   onError={handleVideoError}
                 >
                   <source src="/videos/youtube_clip_1080p.mp4.mkv" type="video/mp4" />
@@ -358,19 +371,19 @@ const Home: React.FC = () => {
                 )}
               </div>
               
-              {/* Video control buttons - centered underneath */}
-              <div className="mt-6 flex space-x-6">
-                <button 
+              {/* Video control buttons - bottom center overlay */}
+              <div className="absolute bottom-8 left-0 right-0 flex justify-center space-x-6 z-20">
+                <button
                   onClick={handleSkipVideo}
-                  className="px-6 py-3 bg-gray-800/80 hover:bg-gray-700 rounded-md text-white transition-all duration-300 flex items-center"
+                  className="px-6 py-3 bg-gray-800/80 hover:bg-gray-700 rounded-md text-white transition-all duration-300 flex items-center backdrop-blur-sm"
                 >
                   <span>Skip Video</span>
                 </button>
-                <button 
+                <button
                   onClick={handleDirectLogin}
-                  className="px-6 py-3 bright-blue-bg hover:bg-blue-500 rounded-md text-black font-medium transition-all duration-300"
+                  className="px-6 py-3 bright-blue-bg hover:bg-blue-500 rounded-md text-black font-medium transition-all duration-300 backdrop-blur-sm"
                 >
-                  Login To SturgTrader
+                  Login To To The Bank
                 </button>
               </div>
             </div>
@@ -402,7 +415,7 @@ const LoginForm: React.FC = () => {
       <div className="glass-panel p-8 rounded-xl">
         <div className="mb-8 text-center">
           <h2 className="text-3xl font-bold mb-2">Welcome Back</h2>
-          <p className="text-gray-400">Sign in to continue to SturgTrader</p>
+          <p className="text-gray-400">Sign in to continue to To The Bank</p>
         </div>
         
         <form onSubmit={handleSubmit}>

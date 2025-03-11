@@ -92,7 +92,7 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, () => {
   console.log(`\x1b[32m%s\x1b[0m`, '=================================================');
-  console.log(`\x1b[32m%s\x1b[0m`, `  SturgTrader running at http://localhost:${PORT}`);
+  console.log(`\x1b[32m%s\x1b[0m`, `  The Bank running at http://localhost:${PORT}`);
   console.log(`\x1b[32m%s\x1b[0m`, '=================================================');
   console.log(`\x1b[36m%s\x1b[0m`, 'Your Freqtrade strategies are accessible through the Freqtrade Dashboard link');
   console.log(`\x1b[33m%s\x1b[0m`, 'Press Ctrl+C to stop the server');

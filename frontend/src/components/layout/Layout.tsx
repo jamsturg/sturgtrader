@@ -7,7 +7,7 @@ interface LayoutProps {
   title?: string;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, title = 'SturgTrader - Next-Gen Trading Platform' }) => {
+const Layout: React.FC<LayoutProps> = ({ children, title = 'To The Bank - Next-Gen Trading Platform' }) => {
   return (
     <div className="min-h-screen bg-[var(--color-background)] text-white">
       <Head>

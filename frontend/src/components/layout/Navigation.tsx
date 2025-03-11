@@ -13,7 +13,7 @@ const Navigation: React.FC = () => {
     <nav className="glass-panel py-4 px-6 mb-6 flex items-center justify-between">
       <div className="flex items-center">
         <Link href="/dashboard" className="text-xl font-bold bright-green-text mr-10">
-          STURG<span className="text-white">TRADER</span>
+          TO THE <span className="text-white">BANK</span>
         </Link>
         
         <div className="flex space-x-6">

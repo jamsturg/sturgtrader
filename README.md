@@ -1,6 +1,6 @@
-# SturgTrader
+# To The Bank
 
-SturgTrader is a next-generation trading platform with a sleek glassmorphic UI, offering powerful trading tools and potential integration with Freqtrade trading strategies.
+To The Bank is a next-generation trading platform with a sleek glassmorphic UI, offering powerful trading tools and potential integration with Freqtrade trading strategies.
 
 ## Project Structure
 
@@ -102,11 +102,11 @@ For production, you'll need to set up the following environment variables in Ver
 
 ## Freqtrade Integration
 
-SturgTrader can be integrated with your existing Freqtrade trading strategies. Here's how:
+To The Bank can be integrated with your existing Freqtrade trading strategies. Here's how:
 
 1. Ensure your Freqtrade instances are properly configured with entry_pricing and exit_pricing parameters.
 2. Use Docker to manage your Freqtrade instances.
-3. Connect the SturgTrader backend to your Docker-based Freqtrade instances.
+3. Connect the To The Bank backend to your Docker-based Freqtrade instances.
 
 ## Troubleshooting
 
