@@ -46,6 +46,13 @@ const Dashboard: React.FC = () => {
     getAccountSubscription();
   }, []);
   
+  useEffect(() => {
+    const audio = new Audio('path/to/your/audio/file.mp3');
+    audio.play().catch((error) => {
+      console.error('Failed to play audio:', error);
+    });
+  }, []);
+  
   // Handle tab changes
   const renderTabContent = () => {
     switch (activeTab) {
@@ -104,6 +111,13 @@ const Dashboard: React.FC = () => {
       default:
         return <TradingDashboard />;
     }
+  };
+  
+  const handleAudioPlay = () => {
+    const audio = new Audio('path/to/your/audio/file.mp3');
+    audio.play().catch((error) => {
+      console.error('Failed to play audio:', error);
+    });
   };
   
   return (
@@ -189,6 +203,8 @@ const Dashboard: React.FC = () => {
       
       {/* Render active tab content */}
       {renderTabContent()}
+      
+      <button onClick={handleAudioPlay}>Play Audio</button>
     </Layout>
   );
 };
