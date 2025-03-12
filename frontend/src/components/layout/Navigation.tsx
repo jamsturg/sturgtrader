@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import ConnectWallet from '../auth/ConnectWallet';
 
 const Navigation: React.FC = () => {
   const router = useRouter();
@@ -44,12 +45,7 @@ const Navigation: React.FC = () => {
         
         <div className="w-px h-6 bg-gray-700"></div>
         
-        <button className="flex items-center space-x-2">
-          <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium">
-            ST
-          </div>
-          <span className="hidden md:inline">Account</span>
-        </button>
+        <ConnectWallet />
       </div>
     </nav>
   );

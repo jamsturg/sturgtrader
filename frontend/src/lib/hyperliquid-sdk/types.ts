@@ -1,3 +1,26 @@
+export interface HyperliquidPosition {
+  symbol: string;
+  side: 'LONG' | 'SHORT';
+  entryPx: number;
+  markPx: number;
+  notional: number;
+  leverage: number;
+  unrealizedPnl: number;
+  liquidationPx: number;
+  timestamp: number;
+}
+
+export interface HyperliquidOrder {
+  orderId: string;
+  symbol: string;
+  side: 'Buy' | 'Sell';
+  price: number;
+  quantity: number;
+  status: 'open' | 'filled' | 'canceled';
+  type: 'limit' | 'market';
+  reduceOnly: boolean;
+  timestamp: number;
+}
 export type Side = 'A' | 'B';
 
 type Position = {
@@ -215,7 +238,9 @@ export interface OrderRequest {
   sz: number;
   limitPx: number;
   orderType: OrderType;
-  reduceOnly: boolean;
+  reduceOnly?: boolean;
+  triggerPx?: number;
+  triggerCondition?: 'mark' | 'last';
 }
 
 export interface CancelRequest {
@@ -234,6 +259,7 @@ export interface Order {
 export interface OrderSpec {
   order: Order;
   orderType: OrderType;
+  reduceOnly?: boolean;
 }
 
 type ResponseStatus = 'success' | { error: string };

@@ -89,6 +89,8 @@ export class Exchange extends API {
     limitPx: number,
     orderType: OrderType,
     reduceOnly = false,
+    triggerPx?: number,
+    triggerCondition?: 'mark' | 'last',
   ): Promise<ApiResponse> {
     return await this.bulkOrders([
       {
@@ -98,6 +100,8 @@ export class Exchange extends API {
         limitPx,
         orderType,
         reduceOnly,
+        triggerPx,
+        triggerCondition,
       },
     ]);
   }
@@ -107,7 +111,7 @@ export class Exchange extends API {
       order: {
         asset: this.coinToAsset[order.coin],
         isBuy: order.isBuy,
-        reduceOnly: order.reduceOnly,
+        reduceOnly: order.reduceOnly || false,
         limitPx: order.limitPx,
         sz: order.sz,
       },

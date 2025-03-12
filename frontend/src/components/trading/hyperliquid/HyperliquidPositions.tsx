@@ -1,151 +1,59 @@
-import React, { useState, useEffect } from 'react';
-import { Position } from '../../../services/hyperliquidService';
-import { enhancedHyperliquidService } from '../../../services/enhancedHyperliquidService';
+import { useQuery } from 'react-query';
+import { FreqtradeApiService } from '../services/api/freqtradeApi';
+import { HyperliquidPosition } from '../../../lib/hyperliquid-sdk/types';
 
-interface HyperliquidPositionsProps {
-  refreshInterval?: number;
-  onPositionSelect?: (position: Position) => void;
-}
+const apiService = new FreqtradeApiService();
 
-const HyperliquidPositions: React.FC<HyperliquidPositionsProps> = ({
-  refreshInterval = 10000,
-  onPositionSelect
-}) => {
-  const [positions, setPositions] = useState<Position[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+export default function HyperliquidPositions() {
+  const { data: positions = [], error: err } = useQuery<HyperliquidPosition[]>(
+    'hyperliquid-positions',
+    apiService.getPositions
+  );
 
-  const fetchPositions = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await enhancedHyperliquidService.getPositions();
-      setPositions(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch positions');
-      console.error('Error fetching positions:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchPositions();
-
-    // Set up polling if refreshInterval is provided
-    if (refreshInterval > 0) {
-      const intervalId = setInterval(fetchPositions, refreshInterval);
-      return () => clearInterval(intervalId);
-    }
-  }, [refreshInterval]);
-
-  const handlePositionClick = (position: Position) => {
-    if (onPositionSelect) {
-      onPositionSelect(position);
-    }
-  };
-
-  if (loading && positions.length === 0) {
-    return (
-      <div className="bg-[var(--color-card-bg)] p-4 rounded-lg border border-[var(--color-border)] shadow-sm">
-        <h3 className="text-lg font-semibold mb-4">Hyperliquid Positions</h3>
-        <div className="flex justify-center py-6">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-primary)]"></div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="bg-[var(--color-card-bg)] p-4 rounded-lg border border-[var(--color-border)] shadow-sm">
-        <h3 className="text-lg font-semibold mb-4">Hyperliquid Positions</h3>
-        <div className="text-center text-red-500 py-6">
-          {error}
-          <button 
-            onClick={fetchPositions}
-            className="block mx-auto mt-2 text-sm bg-[var(--color-primary)] text-white px-3 py-1 rounded"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (positions.length === 0) {
-    return (
-      <div className="bg-[var(--color-card-bg)] p-4 rounded-lg border border-[var(--color-border)] shadow-sm">
-        <h3 className="text-lg font-semibold mb-4">Hyperliquid Positions</h3>
-        <div className="text-center text-gray-500 py-6">
-          No open positions
-        </div>
-      </div>
-    );
+  if (err) {
+    console.error(err);
+    return <div>Error loading positions</div>;
   }
 
   return (
-    <div className="bg-[var(--color-card-bg)] p-4 rounded-lg border border-[var(--color-border)] shadow-sm">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold">Hyperliquid Positions</h3>
-        <button 
-          onClick={fetchPositions} 
-          className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary-hover)]"
-        >
-          Refresh
-        </button>
-      </div>
-      
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-[var(--color-border)]">
-          <thead>
-            <tr>
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Asset</th>
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Size</th>
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Entry Price</th>
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Mark Price</th>
-              <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">PnL</th>
-              <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">Leverage</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[var(--color-border)]">
-            {positions.map((position) => (
-              <tr 
-                key={position.symbol}
-                onClick={() => handlePositionClick(position)}
-                className="cursor-pointer hover:bg-[var(--color-card-bg-secondary)]"
-              >
-                <td className="px-3 py-2 whitespace-nowrap text-sm font-medium">
+    <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+      <h3 className="text-lg font-semibold mb-4">Hyperliquid Positions</h3>
+      <div className="grid grid-cols-1 gap-2">
+        {positions?.map((position) => (
+          <div key={position.symbol} className="bg-gray-700 p-3 rounded-lg hover:bg-gray-600 transition-colors">
+            <div className="flex justify-between items-center mb-2">
+              <div className="flex items-center gap-2">
+                <span className={`text-sm font-mono ${position.side === 'LONG' ? 'text-green-400' : 'text-red-400'}`}>
                   {position.symbol}
-                </td>
-                <td className={`px-3 py-2 whitespace-nowrap text-sm ${position.size > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                  {position.size > 0 ? '+' : ''}{position.size.toFixed(4)}
-                </td>
-                <td className="px-3 py-2 whitespace-nowrap text-sm">
-                  ${position.entryPrice.toFixed(2)}
-                </td>
-                <td className="px-3 py-2 whitespace-nowrap text-sm">
-                  ${position.markPrice.toFixed(2)}
-                </td>
-                <td className={`px-3 py-2 whitespace-nowrap text-sm text-right ${position.pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                  ${position.pnl.toFixed(2)} ({position.pnlPercent.toFixed(2)}%)
-                </td>
-                <td className="px-3 py-2 whitespace-nowrap text-sm text-right">
-                  {position.leverage}x
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                </span>
+                <span className="text-xs text-gray-400">{position.leverage}x</span>
+              </div>
+              <span className="font-medium">${position.notional.toLocaleString()}</span>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-400">Entry:</span>
+                <span>${position.entryPx.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Mark:</span>
+                <span>${position.markPx.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">PNL:</span>
+                <span className={position.unrealizedPnl >= 0 ? 'text-green-400' : 'text-red-400'}>
+                  ${position.unrealizedPnl.toFixed(2)}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Liq Price:</span>
+                <span>${position.liquidationPx.toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
-      
-      {loading && positions.length > 0 && (
-        <div className="flex justify-center mt-4">
-          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[var(--color-primary)]"></div>
-        </div>
-      )}
     </div>
   );
-};
-
-export default HyperliquidPositions;
+}

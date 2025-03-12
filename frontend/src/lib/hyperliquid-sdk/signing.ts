@@ -104,7 +104,7 @@ export function orderSpecToOrderWire(order_spec: OrderSpec): OrderWire {
     isBuy: order.isBuy,
     limitPx: floatToWire(order.limitPx),
     sz: floatToWire(order.sz),
-    reduceOnly: order.reduceOnly,
+    reduceOnly: order.reduceOnly ?? false,
     orderType: orderTypeToWire(order_spec.orderType),
   };
 }

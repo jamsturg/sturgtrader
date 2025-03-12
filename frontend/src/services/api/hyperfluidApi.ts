@@ -1,31 +1,79 @@
-import apiClient from './apiClient';
+import axios, { AxiosInstance, AxiosError } from 'axios';
+import { getApiConfig, saveApiConfig } from '../configService';
+import type { HyperliquidConfig } from '../configService';
+import type { HyperliquidOrder } from '../../lib/hyperliquid-sdk/types';
 
-/**
- * HyperfluidApiService provides methods to interact with the Hyperfluid SDK
- * integration in our backend. This service makes real API calls to our
- * backend endpoints for streaming cryptocurrency payments.
- */
 export class HyperfluidApiService {
-  private baseUrl = '/api/payments/hyperfluid';
+  private config: HyperliquidConfig;
+  private apiInstance: AxiosInstance;
+  private wsConnection?: WebSocket;
+  private reconnectAttempts = 0;
 
-  /**
-   * Initialize the Hyperfluid service with a provider
-   * This must be called before using other methods
-   * @param providerNetwork Ethereum network name (mainnet, goerli, etc.)
-   */
-  async initialize(providerNetwork: string = 'mainnet'): Promise<boolean> {
+  constructor() {
+    this.config = {
+      apiUrl: process.env.NEXT_PUBLIC_HYPERLIQUID_API_URL || '',
+      wsUrl: process.env.NEXT_PUBLIC_HYPERLIQUID_WS_URL || '',
+      network: 'mainnet'
+    };
+
+    // Load initial config synchronously
+    getApiConfig('hyperliquid')
+      .then(savedConfig => {
+        if (savedConfig) {
+          this.config = { ...this.config, ...savedConfig };
+        }
+      })
+      .catch(error => {
+        console.error('Failed to load initial config:', error);
+      });
+    
+    this.apiInstance = axios.create({
+      baseURL: this.config.apiUrl,
+      timeout: 10000,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(this.config.apiKey && { 'X-API-KEY': this.config.apiKey })
+      }
+    });
+
+    this.setupInterceptors();
+  }
+
+  private setupInterceptors() {
+    this.apiInstance.interceptors.response.use(
+      response => response,
+      (error: AxiosError) => {
+        if (error.response?.status === 401) {
+          throw new Error('Invalid API credentials - Please check your API key');
+        }
+        if (!error.response) {
+          throw new Error('Network error - Please check API endpoint configuration');
+        }
+        return Promise.reject(error);
+      }
+    );
+  }
+
+  async initialize(network: string = 'mainnet'): Promise<boolean> {
     try {
-      interface InitResponse {
-        success: boolean;
-        message?: string;
+      const savedConfig = await getApiConfig('hyperliquid');
+      if (savedConfig) {
+        this.config = { ...this.config, ...savedConfig };
       }
       
-      const response = await apiClient.post<InitResponse>(`${this.baseUrl}/initialize`, { network: providerNetwork });
-      return response.success;
+      this.config.network = network;
+      await saveApiConfig('hyperliquid', this.config);
+      
+      return true;
     } catch (error) {
-      console.error('Failed to initialize Hyperfluid service', error);
-      return false;
+      console.error('Failed to initialize Hyperfluid service:', error);
+      throw new Error(`Initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
+  }
+
+  async getOpenOrders(): Promise<HyperliquidOrder[]> {
+    const response = await this.apiInstance.get<{ orders: HyperliquidOrder[] }>('/orders/open');
+    return response.data.orders;
   }
 
   /**
@@ -38,8 +86,8 @@ export class HyperfluidApiService {
         message?: string;
       }
       
-      const response = await apiClient.get<StatusResponse>(`${this.baseUrl}/status`);
-      return response.initialized;
+      const response = await this.apiInstance.get<StatusResponse>('/status');
+      return response.data.initialized;
     } catch (error) {
       console.error('Failed to check Hyperfluid service status', error);
       return false;
@@ -58,13 +106,13 @@ export class HyperfluidApiService {
       transactionHash: string;
     }
     
-    const response = await apiClient.post<CreateFlowResponse>(`${this.baseUrl}/flows`, {
+    const response = await this.apiInstance.post<CreateFlowResponse>('/flows', {
       tokenAddress,
       sender,
       receiver,
       flowRate
     });
-    return response.transactionHash;
+    return response.data.transactionHash;
   }
 
   /**
@@ -79,13 +127,13 @@ export class HyperfluidApiService {
       transactionHash: string;
     }
     
-    const response = await apiClient.put<UpdateFlowResponse>(`${this.baseUrl}/flows`, {
+    const response = await this.apiInstance.put<UpdateFlowResponse>('/flows', {
       tokenAddress,
       sender,
       receiver,
       flowRate
     });
-    return response.transactionHash;
+    return response.data.transactionHash;
   }
 
   /**
@@ -99,14 +147,14 @@ export class HyperfluidApiService {
       transactionHash: string;
     }
     
-    const response = await apiClient.delete<DeleteFlowResponse>(`${this.baseUrl}/flows`, {
+    const response = await this.apiInstance.delete<DeleteFlowResponse>('/flows', {
       data: {
         tokenAddress,
         sender,
         receiver
       }
     });
-    return response.transactionHash;
+    return response.data.transactionHash;
   }
 
   /**
@@ -120,14 +168,14 @@ export class HyperfluidApiService {
       // Add properties as needed
     }
     
-    const response = await apiClient.get<GetFlowResponse>(`${this.baseUrl}/flows`, {
+    const response = await this.apiInstance.get<GetFlowResponse>('/flows', {
       params: {
         tokenAddress,
         sender,
         receiver
       }
     });
-    return response;
+    return response.data;
   }
 
   /**
@@ -140,12 +188,12 @@ export class HyperfluidApiService {
       // Add properties as needed
     }
     
-    const response = await apiClient.get<GetAccountFlowInfoResponse>(`${this.baseUrl}/accounts/${account}`, {
+    const response = await this.apiInstance.get<GetAccountFlowInfoResponse>(`/accounts/${account}`, {
       params: {
         tokenAddress
       }
     });
-    return response;
+    return response.data;
   }
 }
 

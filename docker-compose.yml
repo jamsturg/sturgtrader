@@ -1,81 +1,58 @@
 version: '3.8'
 services:
+  agentzero:
+    image: frdel/agent-zero-run:latest
+    ports:
+      - "50001:80"
+
+  freqtrade:
+    image: freqtradeorg/freqtrade:stable
+    #   volumes:
+    #      - ./user_data:/freqtrade/user_data  # This will need to be handled dynamically
+    ports:
+      - "8080:8080" # This will need to be dynamic/configurable
+    #   command: >
+    #     trade
+    #     --logfile /freqtrade/user_data/logs/freqtrade.log
+    #     --db-url sqlite:////freqtrade/user_data/tradesv3.sqlite
+    #     --config /freqtrade/user_data/config.json # This will be dynamically generated
+    #     --strategy MyStrategy # This will be dynamic
+
+  hummingbot:
+    image: hummingbot/hummingbot:latest
+    # volumes:
+    #   - ./hummingbot_configs:/home/hummingbot/conf  # Example, adjust as needed
+    ports:
+      - "8082:8082" #  Example port, needs to be confirmed/configurable
+    # Add other necessary configurations for Hummingbot here.
+
+  backend:
+    image: trialgpvcie.jfrog.io/sturgtrader-docker/backend:latest  # TODO: Confirm repository and image name with user
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: 3001
+      AGENT_ZERO_API_URL: http://agentzero:80 # Assuming internal Docker networking and port 80
+      #AGENT_ZERO_API_KEY: "" # TODO: Get from user and add all other env vars from backend/.env
+      # Add FREQTRADE_API_URL and HUMMINGBOT_API_URL here, pointing to the respective services.
+    depends_on:
+      - agentzero
+      - freqtrade  # Added freqtrade as dependency
+      - hummingbot  # Added hummingbot as dependency
+
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    image: trialgpvcie.jfrog.io/sturgtrader-docker/frontend:latest  # TODO: Confirm repository and image name with user
     ports:
       - "3000:3000"
     depends_on:
       - backend
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:3001
+      NEXT_PUBLIC_API_URL: http://localhost:3001  # Will be updated for JFrog
+      # Add FREQTRADE_API_URL and HUMMINGBOT_API_URL here, pointing to the respective services (via backend).
 
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    ports:
-      - "3001:3001"
-    environment:
-      PORT: 3001
-
-  freqtrade-gucky:
-    image: freqtradeorg/freqtrade:stable
-    volumes:
-      - ./user_data_gucky:/freqtrade/user_data
-    ports:
-      - "8080:8080"
-    command: >
-      trade
-      --logfile /freqtrade/user_data/logs/freqtrade.log
-      --db-url sqlite:////freqtrade/user_data/tradesv3.sqlite
-      --config /freqtrade/user_data/config-hl-gucky.json
-      --strategy SampleStrategy
-    environment:
-      FREQTRADE_API_KEY: ${GUCKY_API_TOKEN}
-
-  freqtrade-elliot:
-    image: freqtradeorg/freqtrade:stable
-    volumes:
-      - ./user_data_elliot:/freqtrade/user_data
-    ports:
-      - "8081:8080"
-    command: >
-      trade
-      --logfile /freqtrade/user_data/logs/freqtrade.log
-      --db-url sqlite:////freqtrade/user_data/tradesv3.sqlite
-      --config /freqtrade/user_data/config-elliotv5.json
-      --strategy SampleStrategy
-    environment:
-      FREQTRADE_API_KEY: ${ELLIOT_API_TOKEN}
-
-  freqtrade-macd:
-    image: freqtradeorg/freqtrade:stable
-    volumes:
-      - ./user_data_macd:/freqtrade/user_data
-    ports:
-      - "8082:8080"
-    command: >
-      trade
-      --logfile /freqtrade/user_data/logs/freqtrade.log
-      --db-url sqlite:////freqtrade/user_data/tradesv3.sqlite
-      --config /freqtrade/user_data/config-macd.json
-      --strategy SampleStrategy
-    environment:
-      FREQTRADE_API_KEY: ${MACD_API_TOKEN}
-
-  freqtrade-vwap:
-    image: freqtradeorg/freqtrade:stable
-    volumes:
-      - ./user_data_vwap:/freqtrade/user_data
-    ports:
-      - "8083:8080"
-    command: >
-      trade
-      --logfile /freqtrade/user_data/logs/freqtrade.log
-      --db-url sqlite:////freqtrade/user_data/tradesv3.sqlite
-      --config /freqtrade/user_data/config-vwap.json
-      --strategy SampleStrategy
-    environment:
-      FREQTRADE_API_KEY: ${VWAP_API_TOKEN}
+# TODO: Confirm with the user that they are using JFrog Container Registry.
+# TODO: The image names for the frontend and backend need to be confirmed and updated.
+# TODO: Research how to deploy this docker-compose file to JFrog Container Registry,
+# TODO: including how to push the images and create a stack.
+# TODO: Figure out how the frontend (on Vercel) will communicate with the backend (on JFrog).
+# TODO:  Need to get the API keys and other environment variables from the user.
