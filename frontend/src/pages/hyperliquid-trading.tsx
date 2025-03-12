@@ -1,162 +1,101 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Layout from '../components/layout/Layout';
 import HyperliquidPositions from '../components/trading/hyperliquid/HyperliquidPositions';
-import HyperliquidOrders from '../components/trading/hyperliquid/HyperliquidOrders';
-import HyperliquidTradingForm from '../components/trading/hyperliquid/HyperliquidTradingForm';
-import HyperliquidPriceChart from '../components/trading/hyperliquid/HyperliquidPriceChart';
 import HyperliquidOrderBook from '../components/trading/hyperliquid/HyperliquidOrderBook';
-import HyperliquidTransactions from '../components/trading/hyperliquid/HyperliquidTransactions';
-import HyperliquidMarketOverview from '../components/trading/hyperliquid/HyperliquidMarketOverview';
-import { enhancedHyperliquidService } from '../services/enhancedHyperliquidService';
+import HyperliquidPriceChart from '../components/trading/hyperliquid/HyperliquidPriceChart';
+import HyperliquidOrders from '../components/trading/hyperliquid/HyperliquidOrders';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-const HyperliquidTrading: React.FC = () => {
-  const [selectedSymbol, setSelectedSymbol] = useState<string>('BTC');
-  const [selectedPrice, setSelectedPrice] = useState<string>('');
-  const [timeframe, setTimeframe] = useState<'1m' | '5m' | '15m' | '1h' | '4h' | '1d'>('1h');
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [isInitializing, setIsInitializing] = useState<boolean>(true);
-  
-  // Initialize the enhanced service when the page loads
-  useEffect(() => {
-    const initService = async () => {
-      try {
-        setIsInitializing(true);
-        
-        // In a real app, you would get the private key from a more secure source
-        // This is just for demo purposes - ideally would use a wallet integration
-        const privateKey = process.env.NEXT_PUBLIC_HYPERLIQUID_PRIVATE_KEY;
-        const isAuth = await enhancedHyperliquidService.initialize(privateKey);
-        
-        setIsAuthenticated(isAuth);
-      } catch (error) {
-        console.error('Failed to initialize hyperliquid service:', error);
-      } finally {
-        setIsInitializing(false);
-      }
-    };
-    
-    initService();
-  }, []);
-  
-  // Handle market selection from the market overview
-  const handleMarketSelect = (symbol: string) => {
-    setSelectedSymbol(symbol);
-  };
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000, // 1 minute
+      retry: 1
+    },
+  },
+});
 
-  // Handle selecting a position 
-  const handlePositionSelect = (position: any) => {  // Using any to avoid type conflicts
-    setSelectedSymbol(position.symbol);
-  };
-
-  // Handle selecting a price from the order book
-  const handlePriceSelect = (price: number) => {
-    setSelectedPrice(price.toString());
-  };
-
-  // Handle successful order submission
-  const handleOrderSubmit = (result: any) => {
-    console.log('Order submitted:', result);
-    // You could add notifications or other feedback here
-  };
+export default function HyperliquidTradingPage() {
+  // Default symbol to BTC
+  const [activeSymbol, setActiveSymbol] = useState('BTC');
+  const availableSymbols = ['BTC', 'ETH', 'SOL', 'AVAX'];
 
   return (
-    <Layout>
-      <div className="container mx-auto px-4">
-        <div className="py-6">
-          <h1 className="text-3xl font-bold mb-6 text-[var(--color-text-primary)]">Hyperliquid Trading</h1>
+    <QueryClientProvider client={queryClient}>
+      <Layout>
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">Hyperliquid Trading</h1>
           
-          {isInitializing ? (
-            <div className="flex items-center justify-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-primary)]"></div>
+          <div className="flex space-x-2">
+            {availableSymbols.map((symbol) => (
+              <button
+                key={symbol}
+                className={`px-3 py-1 rounded text-sm font-medium ${
+                  activeSymbol === symbol
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-700 hover:bg-gray-600 text-white'
+                }`}
+                onClick={() => setActiveSymbol(symbol)}
+              >
+                {symbol}
+              </button>
+            ))}
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left column - Price chart */}
+          <div className="lg:col-span-2">
+            <HyperliquidPriceChart symbol={activeSymbol} />
+          </div>
+          
+          {/* Right column - Order book */}
+          <div>
+            <HyperliquidOrderBook symbol={activeSymbol} />
+          </div>
+          
+          {/* Positions and open orders section */}
+          <div className="lg:col-span-2">
+            <div className="mb-6">
+              <HyperliquidPositions />
             </div>
-          ) : (
-            <div className="grid grid-cols-12 gap-6">
-              {/* Left Column - 8/12 width */}
-              <div className="col-span-12 lg:col-span-8 space-y-6">
-                {/* Chart */}
-                <HyperliquidPriceChart
-                  symbol={selectedSymbol}
-                  timeframe={timeframe}
-                  height={400}
-                />
-                
-                {/* Order Book & Positions Row */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <HyperliquidOrderBook
-                    symbol={selectedSymbol}
-                    depth={12}
-                    onPriceSelect={handlePriceSelect}
-                  />
-                  
-                  <HyperliquidPositions
-                    refreshInterval={15000}
-                    onPositionSelect={handlePositionSelect}
-                  />
+            
+            <div>
+              <HyperliquidOrders />
+            </div>
+          </div>
+          
+          {/* Trading form or other widgets could go here */}
+          <div>
+            <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+              <h3 className="text-lg font-semibold mb-4">{activeSymbol} Trading Stats</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-gray-400">24h Volume:</span>
+                  <span>$24,582,312</span>
                 </div>
-                
-                {/* Market Overview */}
-                <HyperliquidMarketOverview 
-                  onSelectMarket={handleMarketSelect}
-                  highlightedSymbol={selectedSymbol}
-                />
-                
-                {/* Orders & Transactions Row */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <HyperliquidOrders
-                    refreshInterval={15000}
-                  />
-                  
-                  <HyperliquidTransactions
-                    refreshInterval={30000}
-                    limit={10}
-                  />
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Funding Rate:</span>
+                  <span className="text-green-400">0.01%</span>
                 </div>
-              </div>
-              
-              {/* Right Column - 4/12 width */}
-              <div className="col-span-12 lg:col-span-4 space-y-6">
-                {/* Trading Form */}
-                <HyperliquidTradingForm
-                  defaultSymbol={selectedSymbol}
-                  defaultPrice={selectedPrice}
-                  onOrderSubmit={handleOrderSubmit}
-                />
-                
-                {/* Trading Info */}
-                <div className="bg-[var(--color-card-bg)] p-4 rounded-lg border border-[var(--color-border)] shadow-sm">
-                  <h3 className="text-lg font-semibold mb-4">Hyperliquid</h3>
-                  <p className="text-sm mb-3">
-                    Hyperliquid is a high-performance decentralized derivatives exchange built for professional traders:
-                  </p>
-                  <ul className="text-sm list-disc pl-5 space-y-1 mb-4">
-                    <li>Low fees and fast execution</li>
-                    <li>Up to 20x leverage on perpetual contracts</li>
-                    <li>Deep liquidity and narrow spreads</li>
-                    <li>Advanced order types (limit, market, post-only)</li>
-                    <li>Cross-margining for efficient capital use</li>
-                  </ul>
-                  <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded text-sm">
-                    <p className="font-medium mb-1">SDK Integration</p>
-                    <p>This trading interface utilizes the official Hyperliquid TypeScript SDK for enhanced performance and reliability.</p>
-                  </div>
-                  <p className="text-sm mt-4">
-                    <a 
-                      href="https://hyperliquid.xyz" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-[var(--color-primary)] hover:text-[var(--color-primary-hover)]"
-                    >
-                      Learn more about Hyperliquid →
-                    </a>
-                  </p>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Open Interest:</span>
+                  <span>$143.2M</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Index Price:</span>
+                  <span>${activeSymbol === 'BTC' ? '67,241.32' :
+                          activeSymbol === 'ETH' ? '3,452.78' :
+                          activeSymbol === 'SOL' ? '145.23' : '39.87'}</span>
                 </div>
               </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </Layout>
+    </QueryClientProvider>
   );
-};
-
-export default HyperliquidTrading;
+}

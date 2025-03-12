@@ -27,7 +27,7 @@ services:
     # Add other necessary configurations for Hummingbot here.
 
   backend:
-    image: trialgpvcie.jfrog.io/sturgtrader-docker/backend:latest  # TODO: Confirm repository and image name with user
+    build: ./backend
     ports:
       - "3001:3001"
     environment:
@@ -41,18 +41,18 @@ services:
       - hummingbot  # Added hummingbot as dependency
 
   frontend:
-    image: trialgpvcie.jfrog.io/sturgtrader-docker/frontend:latest  # TODO: Confirm repository and image name with user
+    build: ./frontend
     ports:
       - "3000:3000"
     depends_on:
       - backend
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:3001  # Will be updated for JFrog
+      NEXT_PUBLIC_API_URL: http://localhost:3001  # Will be updated for local docker
       # Add FREQTRADE_API_URL and HUMMINGBOT_API_URL here, pointing to the respective services (via backend).
 
-# TODO: Confirm with the user that they are using JFrog Container Registry.
-# TODO: The image names for the frontend and backend need to be confirmed and updated.
+# TODO: The image names for the frontend and backend have been removed.
+# TODO: This configuration assumes local building of frontend and backend images.
 # TODO: Research how to deploy this docker-compose file to JFrog Container Registry,
-# TODO: including how to push the images and create a stack.
-# TODO: Figure out how the frontend (on Vercel) will communicate with the backend (on JFrog).
+# TODO: including how to push the images and create a stack. This is no longer required.
+# TODO: Figure out how the frontend (on Vercel) will communicate with the backend (on JFrog). This is no longer the case, now local.
 # TODO:  Need to get the API keys and other environment variables from the user.
